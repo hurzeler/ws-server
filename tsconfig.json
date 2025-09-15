@@ -9,9 +9,6 @@
         "@/utils/*": ["../utils/*"],
         "@etek.com.au/logger": [
           "../../logger/dist/index.d.ts"
-        ],
-        "@etek.com.au/winch-commands": [
-          "../../winch-commands/dist/index.d.ts"
         ]
     },
     "allowJs": true,
@@ -32,6 +29,5 @@
   "exclude": ["node_modules"],
   "references": [
     { "path": "../logger" },
-    { "path": "../winch-commands" }
   ]
 }

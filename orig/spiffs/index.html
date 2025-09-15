@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Hub WinchV10 by I-O-T</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="David">
+  <meta name="description" content="Display Meter">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+	<div id="l">
+	<div class="button-wrap">
+		<span class="button-wrap" style="margin-left: 1em; padding-top: 1.8em; padding-right: 0.5em; padding-bottom: 1.8em; padding-left: 0.5em;">
+			<input class="hidden radio-label" type="radio" name="btnACTION" id="PIPR-button" onclick="RewindStateToggle()" disabled></input>
+			<label class="button-label" for="PIPR-button">Tow</label>
+			<input class="hidden radio-label" type="radio" name="btnACTION" id="PAYO-button" onclick="PayoutStateToggle()" disabled></input>
+			<label class="button-label" for="PAYO-button">Regen</label>
+			<input class="hidden radio-label" type="radio" name="btnACTION" id="PIRC-button" onclick="PullIRStateToggle()" disabled></input>
+			<label class="hidden button-label" for="PIRC-button">Step</label>   <!-- added hidden to hide STEP button -->
+		</span>
+
+  </div>
+<div class="flex-container">
+	<div style="flex-grow: 5; align-self: stretch; padding-right: 1rem; padding-left: 2rem; padding-bottom: 1rem">
+
+		<span id="slidertensionA">
+			<div align=left style="padding-top: 1rem"><span class="label tension">Verification Tension</span></div>		
+			<div class="range-wrap" >
+				<input id="WtensionA" type="range" class="range itsdisabled" step="1" value="0" onchange="updateWtensionA()" disabled></input>
+				<output id="bWtensionA" class="bubble tension"></output>
+			</div>		
+		</span>
+		<span id="slidertensionR" class="hidden">
+			<div align=left style="padding-top: 1rem"><span class="label reqtension">Verification Tension req'd</span></div>		
+			<div class="range-wrap">
+				<input id="WtensionR" type="range" class="range itsdisabled" step="1" value="0" onchange="updateWtensionR()" disabled></input>
+				<output id="bWtensionR" class="bubble reqtension"></output>
+			</div>
+		</span>
+		<span id="sliderpower" class="hidden">
+			<div align=left style="padding-top: 1rem"><span class="label power">Set Tension</span></div>
+			<div class="range-wrap">
+				<input id="Wpower" type="range" class="range itsdisabled" step="1" value="0" onchange="updateWPower()" disabled></input>
+				<output id="bWpower" class="bubble power"></output>
+			</div>
+		</span>
+		<span id="sliderregen" class="hidden">
+			<div align=left style="padding-top: 1rem"><span class="label regen">Set Tension</span></div>		
+			<div class="range-wrap">
+				<input id="Wregen" type="range" class="range itsdisabled" step="1" value="0" onchange="updateWregen()" disabled></input>
+				<output id="bWregen" class="bubble regen" style"left: calc(></output>
+			</div>
+		</span>
+		
+		<span id="presetbtns" class="hidden">
+			<div class="button-wrap" style="margin-top: 1em; width: 100%;">
+				<span style="padding-top: 1em; padding-right: 0.5em; padding-bottom: 1em; padding-left: 0.5em;">
+					<input class="hidden" name="btnMN" id="MNbutton" onclick="TRdoMinus()" enabled></input>
+					<label class="button-label" style="margin-right: 3em" id="MNbuttonlbl" for="MNbutton">-</label>
+					<input class="hidden" name="btnST" id="STbutton" onclick="TRdoSET()"  enabled></input>
+					<label class="button-label" style="margin-right: 3em" id="STbuttonlbl" for="STbutton">Launch</label>
+					<input class="hidden" name="btnPL" id="PLbutton" onclick="TRdoPlus()" enabled></input>
+					<label class="button-label" id="PLbuttonlbl"for="PLbutton">+</label>
+	
+					<span style="float: right; margin-right: 1em;">
+						<a id="idPR" href="preset.html"
+						<label class="button-label">Edit</label>
+						</a>
+					</span>
+				</span>
+			</div>
+		</span>	
+	</div>
+</div>
+</div>
+<div class="status-wrap">
+	<span id="statusTN" class="label itsdown">^^</span>
+	<span id="statusRP" class="label itsdown">RPM:<span id="currRPM"></span><span id="currRPMlvl"></span></span>
+	<span id="statusPC" class="hidden label itsdown">PC:<span id="PClvl"></span></span>
+	<a id="idPCS" href="admin.html"><span id="statusPCS" class="hidden label itsdown">PCS:<span id="PCSlvl"></span></span></a>
+	<span id="statusWS" class="hidden label itsdown">WS</span>
+	<span id="statusVT" class="label itsdown">V:<span id="currVOLTS"></span><span id="othVT"></span></span>&nbsp
+	<span id="statusMT" class="label itsdown">MT:<span id="currMTemp"></span><span id="othMT"></span></span>&nbsp
+	<span id="statusBR" class="hidden label itsdown">LScnt:<span id="brstlvl"></span></span>&nbsp
+	<span id="statusAC" class="label itsdown">AC:<span id="currAC"></span></span>&nbsp
+	<span id="statusRSSI" class="hidden label itsdown">RSSI:<span id="rssilvl"></span></span>&nbsp
+	<span id="statusSSID" class="label itsdown">SSID:<span id="currSSID"></span><span id="currSSIDlvl"></span></span>
+	<span id="statusSS" class="label itsdown">Safe state:</span>&nbsp     
+</div>
+<div id="r">	
+	<div class="BtnSAFE" id="lblSAFE">	
+	<input class="hidden" type="radio" name="btnACTION" id="STOP-button" onclick="EmStopStateToggle()" disabled></input>
+	<label for="STOP-button" id="lblSTOP">STOP</label>
+	</div>
+</div>
+</body>
+</html>
+ 
+  <script language="javascript" type="text/javascript">
+	var url = "ws://192.168.4.1:1337/";
+  	var	rangePowerState;
+	var	rangeTensionActualState;
+	var rangeTensionReqState;
+	var	rangeRegenState;
+	var MTempState;
+	var	VoltsState;
+	var	btnPullInPRState;
+	var	btnPullInRCState;
+	var	btnPayoutState;
+	var	btnEmStopState; 
+	var btnWinchCNState;
+	var btnPilotCNState;
+	var rngWpower;
+	var bubWpower;  // Output display for Bubble
+	var rngWregen;
+	var bubWregen;
+	var rngWtensA;
+	var bubWtensA;
+	var rngWtensR;
+	var bubWtensR;
+	var stWS;
+	var stVT;	
+	var stVToth;
+	var stAC;
+	var stMD;
+	var stBR;
+	var stBRlvl;
+	var stRSSI;
+	var stRSSIlvl;
+	var stSS;
+	var stSSID;
+	var stSSIDlvl;
+	var stRP;
+	var stRPlvl;
+	var stTN;
+	var stWT;
+	var stBT;
+	var stPRminus;
+	var stPRset;
+	var stPRplus;
+	var stPRedit;
+
+	var safeStateVal = 0;
+ 
+	var radioInPrev = -1;
+	var radioIn = -1;
+
+    var presetindex = -1;
+	var presetid = "";
+	
+//  Preset Values ordered by presetval[WINCH Mode][value]
+//			[Mode]: Preset=0,Throttle=1,Payout=2
+//			[value]: Minus=0,Set=1,Plus=2
+	var presetval = [[10,50,10],[80,40,10],[20,60,10]];
+	var presetnames = ["- ","Preset ","+ "];
+	var presetws = ["WTRTUv","WTRLAv","WTRPLv"];
+
+	var bodyStyles;
+	var d = new Date;
+
+// This is called when the page finishes loading
+function init() 
+{
+	// For Infomation on the Slider input
+	const allRanges = document.querySelectorAll(".range-wrap");
+	allRanges.forEach(wrap => {
+	  const range = wrap.querySelector(".range");
+	  const bubble = wrap.querySelector(".bubble");
+	  range.addEventListener("input", () => {
+		setBubble(range, bubble);
+	  });
+	  setBubble(range, bubble);
+	});
+	
+    // Assign page elements to variables
+	rngWpower = document.getElementById("Wpower");
+    rngWregen = document.getElementById("Wregen");
+    rngWtensA = document.getElementById("WtensionA");
+    rngWtensR = document.getElementById("WtensionR");
+	bubWpower = document.getElementById("bWpower");
+    bubWregen = document.getElementById("bWregen");
+    bubWtensA = document.getElementById("bWtensionA");
+    bubWtensR = document.getElementById("bWtensionR");
+	MTempState = document.getElementById("currMTemp");
+	VoltsState = document.getElementById("currVOLTS");
+	btnEmStopState = document.getElementById("STOP-button");
+    btnRewindState = document.getElementById("PIPR-button"); // Also known as REWIND
+    btnPullIRState = document.getElementById("PIRC-button");
+    btnPayoutState = document.getElementById("PAYO-button");
+	txtWpower = document.getElementById("pwrlvl");
+	stWS = document.getElementById("statusWS");
+	stVT = document.getElementById("statusVT");
+	stVToth = document.getElementById("othVT");
+	stMT = document.getElementById("statusMT");
+	stMToth = document.getElementById("othMT");
+	stAC = document.getElementById("statusAC");
+	stAClvl = document.getElementById("currAC");
+	stMD = document.getElementById("statusMD");
+	stBR = document.getElementById("statusBR");
+	stBRlvl = document.getElementById("brstlvl");
+	stPC = document.getElementById("statusPC");
+	stPCS = document.getElementById("statusPCS");
+	stPClvl = document.getElementById("PClvl");
+	stPCSlvl = document.getElementById("PCSlvl");
+	stRSSI = document.getElementById("statusRSSI");
+	stRSSIlvl = document.getElementById("rssilvl");
+	stSS = document.getElementById("statusSS");
+	stRP = document.getElementById("statusRP");
+	stRPlvl = document.getElementById("currRPMlvl");
+	stSSID = document.getElementById("statusSSID");
+	stSSIDlvl = document.getElementById("currSSIDlvl");  
+	stTN = document.getElementById("statusTN");
+	stBT = document.getElementById("statusBatt");
+	stSLpower = document.getElementById("sliderpower");
+	stSLtensionA = document.getElementById("slidertensionA");
+	stSLtensionR = document.getElementById("slidertensionR");
+	stSLregen = document.getElementById("sliderregen");
+	stBTNpreset = document.getElementById("presetbtns");
+	stPRminus = document.getElementById("MNbuttonlbl");
+	stPRset = document.getElementById("STbuttonlbl");
+	stPRplus = document.getElementById("PLbuttonlbl");
+	stPRedit = document.getElementById("idPR");
+	bodyStyles = document.body.style;
+	lblSTOP = document.getElementById('lblSTOP');
+	lblSAFE = document.getElementById('r');
+	btnSAFE = document.getElementById('lblSAFE');
+	
+	// Connect to Websocket server
+	wsConnect(url);
+}
+//
+//
+// Call this to connect to the WebSocket server
+function wsConnect(url) 
+{
+    // Connect to WebSocket server
+    websocket = new WebSocket(url);
+    
+    // Assign callbacks
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+		
+}
+ 
+// Called when a WebSocket connection is established with the server
+function onOpen(evt) 
+{
+//    console.log("Connected");
+	elementitsDown(stWS,false);
+	
+	// Now process Presets
+	TRPRPresets();
+    
+    // Enable button
+	elementDisabled(btnEmStopState,false);
+    elementDisabled(btnRewindState,false);
+    elementDisabled(btnPullIRState,false);
+    elementDisabled(btnPayoutState,false);
+
+	btnEmStopState.checked = 'true';
+
+    btnRewindState.classList.add("hidden");    
+    btnPullIRState.classList.add("hidden");
+    btnPayoutState.classList.add("hidden");
+    
+    doSend("getPayinST");
+    doSend("getStepST");
+    doSend("getPayoutST");
+    doSend("getEmSST");
+	doSend("getCN");
+    doSend("getWPwVal");
+    doSend("getWRgVal");
+	doSend("getWPCVal");
+	doSend("getWPCSSta");
+	doSend("getWPCSVal");
+	doSend("getRSSIVal");
+	doSend("getSSVal");
+	doSend("getLSVal");
+	doSend("getVBATVal");
+	doSend("getRPMVal");
+	doSend("getSSIDVal");
+	doSend("getTN");
+	doSend("getAC");
+	doSend("getMT");
+	doSend("getMB");
+}
+
+function elementDisabled(field,flag) 
+{
+//	console.log("Field:",field," Fieldname:",field.id," Flag:",flag);
+	if (flag == true) {
+		field.disabled = true;
+		field.classList.add("itsdisabled");
+		if (field.id == "Wpower") {
+			rngWpower.classList.remove("powerslider");
+		} else if (field.id == "Wregen") {
+			rngWregen.classList.remove("regenslider");
+		} else if (field.id == "WtensionR") {
+			rngWtensR.classList.remove("reqtensionslider");
+		}
+	} else {
+		field.disabled = false;
+		field.classList.remove("itsdisabled");
+		if (field.id == "Wpower") {
+			rngWpower.classList.add("powerslider");
+		} else if (field.id == "Wregen") {
+			rngWregen.classList.add("regenslider");
+		} else if (field.id == "WtensionR") {
+			rngWtensR.classList.add("reqtensionslider");
+		}}
+}
+
+function elementitsDown(field,flag) {
+	if (flag == true) {
+		field.classList.remove("itsup");
+		field.classList.add("itsdown");
+	} else {
+		field.classList.remove("itsdown");
+		field.classList.add("itsup");
+	}
+}
+ 
+// Called when the WebSocket connection is closed
+function onClose(evt) 
+{
+    // Log disconnection state
+//    console.log("Disconnected");
+	elementitsDown(stWS,true);
+	
+    // Disable inputs
+//	elementDisabled(rngWpower,true);
+//  elementDisabled(rngWregen,true);
+//  elementDisabled(rngWtensR,true);
+	elementDisabled(btnEmStopState,true);
+    elementDisabled(btnRewindState,true);
+    elementDisabled(btnPullIRState,true);
+    elementDisabled(btnPayoutState,true);
+	btnEmStopState.checked = 'true';
+
+    // Try to reconnect after a few seconds
+    setTimeout(function() { wsConnect(url) }, 2000);
+}
+ 
+// Called when a message is received from the server
+function onMessage(evt)
+{
+    // Print out our received message
+    //console.log("Received: " + evt.data);
+    var evtMessage1 = evt.data.substring(0,3);
+    var evtMessage2 = evt.data.substring(3);
+	//console.log(evtMessage1);    
+    //console.log(evtMessage2);
+    //btnWRState.style.backgroundColor = "rgb(43, 226, 43)";
+	
+    if (evtMessage1 == "sSS") {
+    	switch(evtMessage2) {
+        case "0":
+            //console.log("Safe pressed");
+            btnEmStopState.checked = true;
+			lblSTOP.innerText  = "SAFE";
+			lblSTOP.style.backgroundColor = "green";
+			lblSAFE.style.backgroundColor = "green";
+			btnSAFE.style.backgroundColor = "green";	
+//			elementDisabled(rngWpower,true);
+			stSLpower.classList.add("hidden");
+//			elementDisabled(rngWregen,true);
+			stSLregen.classList.add("hidden");
+//			elementDisabled(rngWtensR,true);
+			stSLtensionR.classList.add("hidden");
+			stBTNpreset.classList.add("hidden");
+			stSSID.classList.remove("hidden");
+		
+            break;
+		}
+    }
+	
+    if (evtMessage1 == "sCN") {
+		console.log("Pilot Control engaged");
+		// stRSSI.classList.remove("hidden");
+		// stRSSIlvl.classList.remove("hidden");
+	}
+
+	if (evtMessage1 == "vSS") {	 
+        console.log("vSS " + evtMessage2);
+		elementitsDown(stSS,false);
+		safeStateVal = evtMessage2;
+		if (evtMessage2 == 1) {
+			stSS.style.backgroundColor = "green";
+			stSS.innerHTML = "Safe State off";
+			stSS.classList.add("hidden");
+		}
+		if (evtMessage2 == 0) {
+			stSS.style.backgroundColor = "red";
+			stSS.innerHTML = "Safe State on";
+			stSS.classList.remove("hidden");
+		}
+	}
+
+    if (evtMessage1 == "sRW") {
+		switch(evtMessage2) {
+        case "0":
+            console.log("Payin engaged");
+            btnRewindState.checked = true;
+//			elementDisabled(rngWpower,false);
+			stSLpower.classList.remove("hidden");
+			stSLtensionR.classList.add("hidden");
+//			elementDisabled(rngWtensR,false);
+			elementDisabled(rngWtensR,true);
+			presetindex = 0;
+			presetid = "WtensionR";
+			SetPresetBtnText(presetindex);
+			stBTNpreset.classList.remove("hidden");
+			elementDisabled(rngWregen,true);
+			stSLregen.classList.add("hidden");
+			lblSTOP.innerText  = "STOP";
+			lblSTOP.style.backgroundColor = "red";
+			lblSAFE.style.backgroundColor = "red";
+			btnSAFE.style.backgroundColor = "red";
+			stSSID.classList.add("hidden");
+			radioInPrev = -1;
+            break;
+		}
+	}
+    if (evtMessage1 == "sPR") {
+		switch(evtMessage2) {
+		case "0":
+			console.log("Step engaged");
+			btnPullIRState.checked = true;
+//			elementDisabled(rngWpower,false);
+			stSLpower.classList.remove("hidden");
+//			elementDisabled(rngWtensR,true);
+			stSLtensionR.classList.add("hidden");
+			presetindex = 1;
+			presetid = "Wpower";
+			SetPresetBtnText(presetindex);
+			stBTNpreset.classList.remove("hidden");
+//			elementDisabled(rngWregen,true);
+			stSLregen.classList.add("hidden");
+			lblSTOP.innerText  = "STOP";
+			lblSTOP.style.backgroundColor = "red";
+			lblSAFE.style.backgroundColor = "red";
+			btnSAFE.style.backgroundColor = "red";
+			stSSID.classList.add("hidden");
+			radioInPrev = -1;
+			break;
+	    }
+	}
+    if (evtMessage1 == "sPO") {
+		switch(evtMessage2) {
+		case "0":
+			console.log("Payout engaged 1");
+			btnPayoutState.checked=true;
+//			elementDisabled(rngWpower,true);
+			stSLpower.classList.add("hidden");
+//			elementDisabled(rngWtensR,true);
+			stSLtensionR.classList.add("hidden");
+			presetindex = 2;
+			presetid = "Wregen";
+			SetPresetBtnText(presetindex);
+			stBTNpreset.classList.remove("hidden");
+//			elementDisabled(rngWregen,false);
+			stSLregen.classList.remove("hidden");
+			lblSTOP.innerText  = "STOP";
+			lblSTOP.style.backgroundColor = "red";
+			lblSAFE.style.backgroundColor = "red";
+			btnSAFE.style.backgroundColor = "red";
+			stSSID.classList.add("hidden");
+			radioInPrev = -1;
+	        break;
+	    }
+	}
+
+    if (evtMessage1 == "vWP") {
+        console.log("Winch power pot changed to: " + evtMessage2);
+        rngWpower.value = evtMessage2;
+		setBubble(rngWpower,bubWpower);
+    }
+	if (evtMessage1 == "vL1") {
+        //console.log("Winch loadcell changed to: " + evtMessage2);
+	    rngWtensA.value = evtMessage2;
+		setBubble(rngWtensA,bubWtensA);	
+//		txtWtensA.innerHTML = rngWtensA.value;
+    }
+    if (evtMessage1 == "vWR") {
+        console.log("Winch regen power pot changed to: " + evtMessage2);
+	    rngWregen.value = evtMessage2;	
+		setBubble(rngWregen,bubWregen);	
+//		txtWregen.innerHTML = rngWregen.value;
+    }
+
+    if (evtMessage1 == "vTR") {
+        console.log("Winch tension required changed to: " + evtMessage2);
+	    rngWtensR.value = evtMessage2;
+		setBubble(rngWtensR,bubWtensR);	
+//		txtWtensR.innerHTML = rngWtensR.value;
+    }
+
+	if (evtMessage1 == "vMB") {	
+		//console.log("Main battery voltage is " + parseFloat(evtMessage2).toFixed(1));
+		if (evtMessage2 > 79) {
+			stVT.classList = "label volts-high";
+		} else if (evtMessage2 < 72){
+			stVT.classList = "label volts-low";
+		} else {
+			stVT.classList = "label volts-good";
+		}
+		VoltsState.innerHTML = parseFloat(evtMessage2).toFixed(1);
+		elementitsDown(stVT,false);
+    }
+
+	if (evtMessage1 == "vMT") {	 
+        //console.log("vMT" + evtMessage2);
+		MTempState.innerHTML = evtMessage2;
+		stMT.style.color = "black";
+		stMT.style.backgroundColor = "orange";
+		elementitsDown(stMT,false);
+		MTempState.innerHTML = parseFloat(evtMessage2).toFixed(0);
+		
+    }
+
+	if (evtMessage1 == "vMT") {	
+        //console.log("vMT" + evtMessage2);
+		if (evtMessage2 > 40) {
+			stMT.classList = "label mTemp-high";
+		} else if (evtMessage2 < 10){
+			stMT.classList = "label mTemp-low";
+		} else {
+			stMT.classList = "label mTemp-good";
+		}
+		MTempState.innerHTML = parseFloat(evtMessage2).toFixed(0);
+    }
+
+
+
+	if (evtMessage1 == "HAL") {	
+        console.log("HAL" + evtMessage2);
+		elementitsDown(stPC,false);
+		stPClvl.innerHTML = evtMessage2;
+    }
+
+	if (evtMessage1 == "PCS") {	
+        console.log("PCS" + evtMessage2);
+		elementitsDown(stPCS,false);
+		stPCSlvl.innerHTML = evtMessage2;
+    }
+
+	if (evtMessage1 == "vRP") {	 
+        //console.log("vRP" + evtMessage2);
+		elementitsDown(stRP,false);
+		stRPlvl.innerHTML = evtMessage2;
+    }
+
+	if (evtMessage1 == "vID") {	 
+        console.log("vID" + evtMessage2);
+		elementitsDown(stSSID,false);
+		stSSIDlvl.innerHTML = evtMessage2;
+    }
+
+	if (evtMessage1 == "vTN") {	 
+        console.log("vTN" + evtMessage2);
+		elementitsDown(stTN,false);
+		if (evtMessage2 == 1) {
+			stTN.style.backgroundColor = "lime";
+			stTN.innerHTML = "IN";
+		}
+		if (evtMessage2 == -1) {
+			stTN.style.backgroundColor = "salmon";
+			stTN.innerHTML = "OUT";
+		}
+	}
+
+	if (evtMessage1 == "vRS") {	
+        //console.log("RSSI" + evtMessage2);
+		elementitsDown(stRSSI,false);
+		stRSSIlvl.innerHTML = evtMessage2;
+    }
+
+    if (evtMessage1 == "vAC") {
+		elementitsDown(stAC,false);
+		stAClvl.innerHTML = evtMessage2;
+    }
+	
+    if (evtMessage1 == "vBL") {
+        //console.log("vBL" + evtMessage2);
+		elementitsDown(stBR,false);
+		stBRlvl.innerHTML = evtMessage2;
+    }
+	//if (evtMessage1 == "vCO") {
+	//	stVToth.innerHTML = "OV";
+	//	stVToth.classList = "blink"
+	//}
+	//if (evtMessage1 == "vCU") {
+	//	stVToth.innerHTML = "UV";
+	//	stVToth.classList = "blink"
+	//}
+	if (evtMessage1 == "vPS") {
+        switch(evtMessage2) {
+        case "1":
+            console.log("vPS Pulse count contolled line stopping engaged" + ", stPClvl: " + stPClvl.innerHTML + ", stPCSlvl: " + stPCSlvl.innerHTML);
+			stPC.classList.remove("hidden");
+			stPCS.classList.remove("hidden");
+			stPClvl.classList.remove("hidden");
+			stPCSlvl.classList.remove("hidden");
+			stPC.style.backgroundColor = "green";
+			stPCS.style.backgroundColor = "green";
+			stPClvl.style.backgroundColor = "green";
+			stPCSlvl.style.backgroundColor = "green";
+			if (stPClvl.innerHTML < stPCSlvl.innerHTML) {
+				stPC.style.backgroundColor = "red";
+				stPClvl.style.backgroundColor = "red";
+			}
+            break;
+        case "0":
+            console.log("vPS Pulse count contolled line stopping disengaged");
+			stPC.style.backgroundColor = "orange";
+			stPCS.style.backgroundColor = "orange";
+			stPClvl.style.backgroundColor = "orange";
+			stPCSlvl.style.backgroundColor = "orange";
+			//stPC.classList.add("hidden");
+			//stPCS.classList.add("hidden");
+			//stPClvl.classList.add("hidden");
+			//stPCSlvl.classList.add("hidden");
+            break;
+        }
+    }
+}
+// Called when a WebSocket error occurs
+function onError(evt)
+{
+    console.log("ERROR: " + evt.data);
+    stWS.style.backgroundColor = "orange";
+//	elementDisabled(rngWpower,true);
+	stSLpower.classList.add("hidden");
+//	elementDisabled(rngWtensR,true);
+	stSLtensionR.classList.add("hidden");
+	stBTNpreset.classList.add("hidden");
+//	elementDisabled(rngWregen,true);
+	stSLregen.classList.add("hidden");
+}
+ 
+// Sends a message to the server (and prints it to the console)
+function doSend(message) 
+{
+    console.log("Sending: " + message);
+    websocket.send(message);
+}
+ 
+// Called when the Pay in button is pressed
+function RewindStateToggle() 
+{
+    if (safeStateVal == 1) {
+		doSend("PayinST");
+	}
+}
+ 
+// Called when the Pilot Control option is pressed
+function PilotCN()
+{
+    doSend("PilotCN");
+}
+// Called when the Winch Control option is pressed
+function WinchCN() 
+{
+    doSend("WinchCN");
+}
+// Called when the Step button is pressed
+function PullIRStateToggle() 
+{
+	if (safeStateVal == 1) {
+		doSend("StepST");
+	}
+}
+// Called when the Payout button is pressed
+function PayoutStateToggle() 
+{
+	if (safeStateVal == 1) {
+		doSend("PayoutST");
+	}
+}
+// Called when the STOP button is pressed
+function EmStopStateToggle() 
+{
+	doSend("EmStopST");
+}
+// Called when the Remote text is moused
+function OTATrigger() 
+{
+    txtOTA.href="/update";
+}
+
+// Called whenever the power value changed
+function updateWPower() {
+	setBubble(rngWpower,bubWpower);	
+	message = "WPwVal" + rngWpower.value;
+	doSend(message);
+}
+
+// Called whenever the regen value changed
+function updateWregen() {
+	setBubble(rngWregen,bubWregen);	
+	message = "WRgVal" + rngWregen.value;
+	doSend(message);
+}
+
+// Called whenever the TensionA value changed
+function updateWtensionA() {
+	message = "WTAVal" + rngWtensA.value;
+	doSend(message);
+}
+
+function TRdoMinus() {
+	radioIn = 4;
+	switch(presetindex) {
+		case 0:
+			rngWpower.value = parseInt(rngWpower.value) - presetval[presetindex][0];
+			updateWPower();
+			break;
+		case 1:
+			rngWpower.value = parseInt(rngWpower.value) - presetval[presetindex][0];
+			updateWPower();
+		case 2:
+			rngWregen.value = parseInt(rngWregen.value) - presetval[presetindex][0];
+			updateWregen();
+	}
+	radioInPrev = radioIn;
+}
+
+function TRdoSET() {
+	radioIn = 3;
+	if (radioInPrev == radioIn) {  //if last button press was SET then do SET
+		switch(presetindex) {
+			case 0:
+				rngWpower.value = presetval[presetindex][1];
+				updateWPower();
+				break;
+			case 1:
+				rngWpower.value = presetval[presetindex][1];
+				updateWPower();
+				break;
+			case 2:
+				rngWregen.value = presetval[presetindex][1];
+				updateWregen();
+		}
+	}
+	radioInPrev = radioIn;
+}
+
+function TRdoPlus() {
+	radioIn = 2;
+	switch(presetindex) {
+		case 0:
+			rngWpower.value = parseInt(rngWpower.value) + presetval[presetindex][2];
+			updateWPower();
+			break;
+		case 1:
+			rngWpower.value = parseInt(rngWpower.value) + presetval[presetindex][2];
+			updateWPower();
+			break;
+		case 2:
+			rngWregen.value = parseInt(rngWregen.value) + presetval[presetindex][2];
+			updateWregen();
+	}
+	radioInPrev = radioIn;
+}
+
+function TRPRPresets() {
+	//  Check localstorage for Preset values, if not present use hardcoded values
+	for (let i = 0; i < 3; i++) {
+		for (let j = 0; j < 3; j++) {
+			if (localStorage.getItem("preset"+i+j) === null) {
+				localStorage.setItem("preset"+i+j,presetval[i][j]);
+			} else {
+				presetval[i][j] = Number(localStorage.getItem("preset"+i+j));
+				console.log("Preset Loaded:"+i+j+"="+presetval[i][j]);
+			}
+		}
+	}
+}
+
+function SetPresetBtnText(themode) {
+	// Set Preset Button Text
+	stPRminus.innerHTML = presetnames[0] + presetval[themode][0];
+	console.log("Minus:"+presetval[themode][0]);
+	stPRset.innerHTML = presetnames[1] + presetval[themode][1];
+	console.log("Preset:"+presetval[themode][1]);
+	stPRplus.innerHTML = presetnames[2] + presetval[themode][2];
+	console.log("Plus:"+presetval[themode][2]);
+	stPRedit.href = "preset.html?mode=" + themode;
+	// Tell WBU what values are being used
+	if (themode <= 2) {
+		for (let j = 0; j < 3; j++) {			
+			message = presetws[j] + presetval[themode][j];
+			doSend(message); 
+		}
+	}
+}
+
+function setBubble(range, bubble) {
+	const val = range.value;
+	const newVal = Number(val);
+	bubble.innerHTML = val;
+	// Sorta magic numbers based on size of the native UI thumb
+	bubble.style.left = `calc(${newVal}% + (${20 - newVal * 0.7}px))`;
+}
+
+lblSAFE.addEventListener("touchstart", EmStopStateToggle, false);
+
+// Call the init function as soon as getElementById("winchMode")the page loads
+window.addEventListener("load", init, false);
+</script>

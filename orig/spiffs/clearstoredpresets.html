@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Adjust Presets by I-O-T</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="David">
+  <meta name="description" content="Adjust presets for PullIn">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body onload="ClearFromLocalStorage()">
+<div class="presets"><h1>Clear Stored Presets - <span id="hdgMode">Error</span></div>
+
+</body>
+</html>
+ 
+<script language="javascript" type="text/javascript">
+
+function ClearFromLocalStorage() {
+	for (let i = 0; i < 3; i++) {
+		for (let j = 0; j < 3; j++) {
+			localStorage.removeItem("preset"+i+j);
+			console.log("removed preset"+i+j);
+		}
+	}
+	document.getElementById("hdgMode").innerHTML = "Done";
+}
+</script>

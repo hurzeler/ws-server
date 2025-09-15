@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Presets by I-O-T</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="David">
+  <meta name="description" content="Adjust presets">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+<div class="presets"><h1><span id="hdgTitle">Adjust Values - </span><span id="hdgMode">Error</span></div>
+<div class="presets">
+	<span id="slidertakeup">
+		<div align=left style="margin-top: 0.5rem; margin-left: 2.3rem"><span class="label power">Minus</span></div>
+		<div class="range-wrap" style="margin-top: 0.5rem; margin-left: 2.3rem">
+			<input id="idMN" type="range" class="range reqtensionslider" step="1" value="0" min="0" max="30" onchange="updateMN()"></input>
+			<output id="bMN" class="bubble reqtension"></output>
+		</div>
+	</span>
+	<span id="sliderplus">
+		<div align=left  style="margin-top: 0.5rem; margin-left: 2.3rem"><span class="label power">Plus</span></div>		
+		<div class="range-wrap" style="margin-top: 0.5rem; margin-left: 2.3rem">
+			<input id="idPL" type="range" class="range reqtensionslider" step="1" value="0" min="0" max="30" onchange="updatePL()"></input>
+			<output id="bPL" class="bubble reqtension"></output>
+		</div>
+	</span>
+	<span id="sliderlaunch">
+		<div align=left  style="margin-top: 0.5rem; margin-left: 2.3rem"><span class="label power">Preset</span></div>		
+		<div class="range-wrap" style="margin-top: 0.5rem; margin-left: 2.3rem">
+			<input id="idSET" type="range" class="range reqtensionslider" step="2" value="0" onchange="updateSET()"</input>
+			<output id="bSET" class="bubble reqtension"></output>
+		</div>		
+	</span>
+</div>
+<div class="preset">
+	<a href="index.html"><label class="button-label" style="margin-top: 0rem">Save and Return</label></a>
+	<span style="float: right">
+		<a href="admin.html"><label class="hidden button-label" style="margin-top: 0rem">Pulse counts</label></a>  <!-- added hidden to hide Pulse count edit button -->
+	</span>
+</div>
+</body>
+</html>
+ 
+  <script language="javascript" type="text/javascript">
+	const urlParams = new URLSearchParams(window.location.search);
+	var mode = urlParams.getAll('mode')
+	var url = "ws://192.168.4.1:1337/";
+	var rngMN;
+	var bubMN;  // Output display for Bubble
+	var rngSET;
+	var bubSET;
+	var rngPL;
+	var bubPL;
+	var hdgDESC;
+	var modeDESC = ["Tow Mode","Stepping Mode","Regen Mode"];
+	var presetval = [0,0,0];
+
+
+// This is called when the page finishes loading
+function init() 
+{
+	// For Infomation on the Slider input
+	const allRanges = document.querySelectorAll(".range-wrap");
+	allRanges.forEach(wrap => {
+	  const range = wrap.querySelector(".range");
+	  const bubble = wrap.querySelector(".bubble");
+	  range.addEventListener("input", () => {
+		setBubble(range, bubble);
+	  });
+	  setBubble(range, bubble);
+	});
+	
+    // Assign page elements to variables
+	rngMN = document.getElementById("idMN");
+    rngSET = document.getElementById("idSET");
+    rngPL = document.getElementById("idPL");
+	bubMN = document.getElementById("bMN");
+    bubSET = document.getElementById("bSET");
+    bubPL = document.getElementById("bPL");
+	hdgTitle = document.getElementById("hdgTitle");
+	hdgDESC = document.getElementById("hdgMode");
+	
+	// Set Heading text
+	hdgDESC.innerHTML = modeDESC[mode];
+	hdgTitle.style.color = 'white';
+	hdgDESC.style.color = 'white';
+	if (modeDESC[mode] == "Tow Mode"){
+		hdgTitle.style.backgroundColor = '#2c75d2';
+		hdgDESC.style.backgroundColor = '#2c75d2';
+	}	
+	if (modeDESC[mode] == "Regen Mode"){
+		hdgTitle.style.backgroundColor = '#2ECC71';
+		hdgDESC.style.backgroundColor = '#2ECC71';
+	}
+	
+	// Load Presets from localstorage
+	loadFromLocalStorage();
+	
+    // Connect to WebSocket server
+    wsConnect(url);
+}
+//
+//
+// Call this to connect to the WebSocket server
+function wsConnect(url) 
+{
+    // Connect to WebSocket server
+    websocket = new WebSocket(url);
+    
+    // Assign callbacks
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+}
+ 
+// Called when a WebSocket connection is established with the server
+function onOpen(evt) 
+{
+    // Log connection state
+    console.log("Connected");
+    
+    // Enable sliders
+	rngMN.disabled = false;
+	rngSET.disabled = false;
+	rngPL.disabled = false;
+}
+
+
+// Called when the WebSocket connection is closed
+function onClose(evt) 
+{
+    // Log disconnection state
+//    console.log("Disconnected");
+
+	
+    // Disable inputs
+	rngMN.disabled = true;
+	rngSET.disabled = true;
+	rngPL.disabled = true;
+
+    // Try to reconnect after a few seconds
+    setTimeout(function() { wsConnect(url) }, 2000);
+}
+ 
+// Called when a message is received from the server
+function onMessage(evt)
+{
+    // Print out our received message
+    console.log("Received: " + evt.data);
+    var evtMessage1 = evt.data.substring(0,3);
+    var evtMessage2 = evt.data.substring(3);
+    //console.log(evtMessage1);    
+    //console.log(evtMessage2);
+}
+// Called when a WebSocket error occurs
+function onError(evt)
+{
+    console.log("ERROR: " + evt.data);
+    // Disable inputs
+	rngMN.disabled = true;
+	rngSET.disabled = true;
+	rngPL.disabled = true;
+} 
+// Sends a message to the server (and prints it to the console)
+function doSend(message) 
+{
+    console.log("Sending: " + message);
+    websocket.send(message);
+}
+function updateMN() {
+	localStorage.setItem("preset"+mode+0,rngMN.value);
+}
+
+// Called whenever the regen power slider is moved
+function updateSET() {
+	localStorage.setItem("preset"+mode+1,rngSET.value);
+}
+
+// Called whenever the TensionR slider is moved
+function updatePL() {
+	localStorage.setItem("preset"+mode+2,rngPL.value);
+}
+function loadFromLocalStorage() {
+	for (let i = 0; i < 3; i++) {
+		if (localStorage.getItem("preset"+mode+i) === null) {
+			localStorage.setItem("preset"+mode+i,presetval[i]);
+		} else {
+			presetval[i] = Number(localStorage.getItem("preset"+mode+i));
+		}
+		if (i == 0) {
+			rngMN.value = presetval[0];
+			setBubble(rngMN,bubMN);
+		}
+		if (i == 1) {
+			rngSET.value = presetval[1];
+			setBubble(rngSET,bubSET);
+		}
+		if (i == 2) {
+			rngPL.value = presetval[2];
+			setBubble(rngPL,bubPL);
+		}
+	}
+}
+
+function setBubble(range, bubble) {
+	const val = range.value;
+	const newVal = Number(val);
+	bubble.innerHTML = val;
+
+	// Sorta magic numbers based on size of the native UI thumb
+	bubble.style.left = `calc(${newVal}% + (${20 - newVal * 0.7}px))`;
+}
+// Call the init function as soon as the page loads
+window.addEventListener("load", init, false);
+</script>

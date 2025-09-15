@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@etek.com.au/ws-server",
+  "module": "websocket-server.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/app.ts --outdir dist --target node",
+    "build:watch": "bun build src/app.ts --outdir dist --target node --watch",
+    "start": "bun src/app.ts",
+    "start:monitor": "cross-env NODE_ENV=production bun src/app.ts --monitor",
+    "start:headless": "cross-env NODE_ENV=production bun src/app.ts --monitor --headless",
+    "start:node": "cross-env NODE_ENV=production node --loader ts-node/esm src/app.ts",
+    "start:monitor:node": "cross-env NODE_ENV=production node --loader ts-node/esm src/app.ts --monitor",
+    "dev": "bun --watch src/app.ts",
+    "dev:headless": "cross-env CONSOLE_LEVEL=debug bun --watch src/app.ts --headless",
+    "dev:node": "cross-env CONSOLE_LEVEL=debug ts-node --esm src/app.ts",
+    "debug": "cross-env CONSOLE_LEVEL=debug bun --inspect --watch src/app.ts",
+    "debug:break": "cross-env CONSOLE_LEVEL=debug bun --inspect-brk --watch src/app.ts",
+    "debug:build": "bun run build && cross-env CONSOLE_LEVEL=debug node --inspect dist/app.js",
+    "test": "jest --detectOpenHandles --forceExit",
+    "test:zeroconf": "jest --detectOpenHandles --forceExit test/zeroConf-service.test.ts",
+    "monitor": "bun scripts/monitor.ts",
+    "monitor:fast": "bun scripts/monitor.ts -i 500",
+    "monitor:log": "bun scripts/monitor.ts --no-clear",
+    "monitor:standalone": "bun scripts/monitor.ts",
+    "monitor:history": "bun scripts/monitor.ts --log-history",
+    "test:bun": "bun test && exit 0",
+    "test:simulation": "bun src/test-simulation.ts",
+    "test:modular": "bun src/test-modular.ts",
+    "test:monitoring": "bun scripts/test-monitoring.ts"
+  },
+  "devDependencies": {
+    "@types/bonjour": "^3.5.13",
+    "@types/bun": "latest",
+    "cross-env": "^10.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "_moduleAliases": {
+    "@": "./dist"
+  },
+  "dependencies": {
+    "@etek.com.au/logger": "link:@etek.com.au/logger",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.17.1",
+    "@types/ws": "^8.5.10",
+    "bonjour": "^3.5.0",
+    "jest": "^29.7.0",
+    "module-alias": "^2.2.3",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
+    "ws": "8.14.2"
+  }
+}

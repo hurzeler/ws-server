@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch: Bun via WSL",
+            "type": "node",
+            "request": "launch",
+            "console": "internalConsole", // avoids cmd/pty issues
+            "runtimeExecutable": "C:\\Windows\\System32\\wsl.exe",
+            "runtimeArgs": [
+                "-d",
+                "Ubuntu_20.04_WSL2", // <-- put your actual distro name here
+                "bash",
+                "-lc",
+                "cd /home/hurzeler/src/ws-server && NODE_ENV=development CONSOLE_LEVEL=debug bun --inspect=0.0.0.0:9229 src/app.ts"
+            ],
+            "attachSimplePort": 9229, // debugger auto-attaches
+            "restart": true,
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/home/hurzeler/src/ws-server" // keeps breakpoints bound
+        },
+        {
+            "name": "Bun: Attach (WSL)",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "restart": true,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "${workspaceFolder}"
+        }
+    ]
+}

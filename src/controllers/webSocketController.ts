@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import * as os from 'os';
 import { Mode } from '@/types/winchEnums';
 import { ZeroConfService } from '@/services/zeroConfService';
-import { log, debug, error, warn } from '@etek.com.au/logger';
+import { log, debug, error, warn } from '@etek.com.au/logger/react-native';
 import { WinchController } from '@/controllers/winchController';
 import { networkConfig } from '@/config/network';
 import { getCommandsByState } from '@/config/commands';
@@ -237,7 +237,7 @@ export class WebSocketController {
             
             this.wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
-                    log(`🔊 Broadcasting message to client: ${message}`);
+                    debug(`🔊 Broadcasting message to client: ${message}`);
                     client.send(message);
                 } else {
                     warn(`Client not ready, state: ${client.readyState}`);

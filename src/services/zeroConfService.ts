@@ -1,5 +1,5 @@
 import bonjour from 'bonjour';
-import { log, error } from '@etek.com.au/logger';
+import { log, error } from '@etek.com.au/logger/react-native';
 
 
 export interface ZeroConfConfig {

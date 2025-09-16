@@ -2,24 +2,41 @@
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@etek.com.au/ws-server",
   "version": "1.0.0",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
-  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./model/winchState": "./src/model/winchState.ts",
-    "./config/commands": "./src/config/commands.ts",
-    "./types/winchEnums": "./src/types/winchEnums.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./model/winchState": {
+      "import": "./dist/model/winchState.js",
+      "types": "./dist/model/winchState.d.ts"
+    },
+    "./config/commands": {
+      "import": "./dist/config/commands.js",
+      "types": "./dist/config/commands.d.ts"
+    },
+    "./types/winchEnums": {
+      "import": "./dist/types/winchEnums.js",
+      "types": "./dist/types/winchEnums.d.ts"
+    }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "bun build src/app.ts --outdir dist --target node",
-    "build:watch": "bun build src/app.ts --outdir dist --target node --watch",
+    "build": "tsc --project tsconfig.json --outDir dist --declaration --declarationMap --sourceMap && tsc-alias -p tsconfig.json",
+    "build:watch": "tsc --project tsconfig.json --outDir dist --declaration --declarationMap --sourceMap --watch",
     "start": "bun src/app.ts",
     "start:monitor": "cross-env NODE_ENV=production bun src/app.ts --monitor",
     "start:headless": "cross-env NODE_ENV=production bun src/app.ts --monitor --headless",
     "start:node": "cross-env NODE_ENV=production node --loader ts-node/esm src/app.ts",
     "start:monitor:node": "cross-env NODE_ENV=production node --loader ts-node/esm src/app.ts --monitor",
-    "dev": "bun --watch src/app.ts",
+    "dev": "bun run build:watch",
+    "prepare": "bun run build",
     "dev:headless": "cross-env CONSOLE_LEVEL=debug bun --watch src/app.ts --headless",
     "dev:node": "cross-env CONSOLE_LEVEL=debug ts-node --esm src/app.ts",
     "debug": "cross-env CONSOLE_LEVEL=debug bun --inspect --watch src/app.ts",
@@ -39,14 +56,6 @@
     "test:modular": "bun src/test-modular.ts",
     "test:monitoring": "bun scripts/test-monitoring.ts"
   },
-  "devDependencies": {
-    "@types/bonjour": "^3.5.13",
-    "@types/bun": "latest",
-    "cross-env": "^10.0.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.7.3"
-  },
   "_moduleAliases": {
     "@": "./dist"
   },
@@ -61,5 +70,14 @@
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "ws": "8.14.2"
+  },
+  "devDependencies": {
+    "@types/bonjour": "^3.5.13",
+    "@types/bun": "latest",
+    "cross-env": "^10.0.0",
+    "tsc-alias": "^1.8.16"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
   }
 }

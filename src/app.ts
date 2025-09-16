@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import { log, debug, error } from '@etek.com.au/logger';
+import { log, debug, error } from '@etek.com.au/logger/react-native';
 import { WebSocketController } from '@/controllers/webSocketController';
 import { CounterService } from '@/services/counterService';
 import { WinchController } from '@/controllers/winchController';

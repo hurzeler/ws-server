@@ -6,9 +6,9 @@ export * from './utils/stateGenerator';
 
 // Export controllers
 export { WinchController } from './controllers/winchController';
-export { WebSocketController } from './controllers/webSocketController';
+// WebSocketController excluded - uses Node.js ws module, not compatible with React Native
 
 // Export services
-export { SimulationManager } from './simulation/simulation';
-export { ZeroConfService } from './services/zeroConfService';
-export { CounterService } from './services/counterService';
+// SimulationManager excluded - not needed for React Native app
+// ZeroConfService excluded - not needed for React Native app  
+// CounterService excluded - uses Node.js fs module, not compatible with React Native

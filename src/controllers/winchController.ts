@@ -1,4 +1,4 @@
-import { log, warn, debug } from '@etek.com.au/logger';
+import { log, warn, debug } from '@etek.com.au/logger/react-native';
 import { WinchState, createInitialWinchState } from '@/model/winchState';
 import { ToggleState, SafeStopState, Mode } from '@/types/winchEnums';
 import { SimulationManager } from '@/simulation/simulation';

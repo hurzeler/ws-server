@@ -300,3 +300,14 @@ export const getCommandsByCategory = (category: 'control' | 'getter' | 'setter')
 export const getCommandsByState = (state: string): Command[] => {
     return allCommands.filter(cmd => cmd.state === state);
 };
+
+// Generate regex pattern for message handlers from getter commands
+export const getMessageHandlerPattern = (): string => {
+    const getterFormats = getterCommands
+        .filter(cmd => cmd.format)
+        .map(cmd => cmd.format!.replace('{value}', '.*'))
+        .map(format => `^${format}`)
+        .join('|');
+    
+    return getterFormats;
+};

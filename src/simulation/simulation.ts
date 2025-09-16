@@ -1,5 +1,5 @@
 
-import { log, debug } from '@etek.com.au/logger';
+import { log, debug } from '@etek.com.au/logger/react-native';
 import { WinchController } from '@/controllers/winchController';
 import { Mode } from '@/types/winchEnums';
 

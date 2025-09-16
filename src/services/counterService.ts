@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { log, debug, error, warn } from '@etek.com.au/logger';
+import { log, debug, error, warn } from '@etek.com.au/logger/react-native';
 
 export class CounterService {
     private static instance: CounterService;

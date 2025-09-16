@@ -5,6 +5,7 @@ import { ZeroConfService } from '@/services/zeroConfService';
 import { log, debug, error, warn } from '@etek.com.au/logger';
 import { WinchController } from '@/controllers/winchController';
 import { networkConfig } from '@/config/network';
+import { getCommandsByState } from '@/config/commands';
 
 export class WebSocketController {
     private wss!: WebSocketServer;
@@ -84,12 +85,31 @@ export class WebSocketController {
     private setupStateListeners(): void {
         // Set state change callback to handle WebSocket broadcasting
         this.winchController.setStateChangeCallback((property: string, value: number | string | Date, format: string) => {
-            // Broadcast to all clients
-            log(`🔊 State changed: ${property} = ${value}`); 
-            if (format) {
-                this.broadcastMessage(format.replace('{value}', String(value)));
+            // Find commands that use this state property
+            const commands = getCommandsByState(property);
+            
+            if (commands.length > 0) {
+                // Use the first command's format (there should typically be only one)
+                const command = commands[0];
+                if (command.format) {
+                    let formattedValue = String(value);
+                    
+                    // Apply formatting options if available
+                    if (command.formatOptions?.decimalPlaces !== undefined) {
+                        formattedValue = Number(value).toFixed(command.formatOptions.decimalPlaces);
+                    }
+                    
+                    const message = command.format.replace('{value}', formattedValue);
+                    debug(`🔧 State change: ${property}=${value} → ${message} (command: ${command.action})`);
+                    this.broadcastMessage(message);
+                } else {
+                    // Fallback to raw format if no format defined
+                    debug(`🔧 State change: ${property}=${value} → ${property}${value} (no format)`);
+                    this.broadcastMessage(`${property}${value}`);
+                }
             } else {
-                // Fallback to raw format if no mapping found
+                // Fallback to raw format if no command mapping found
+                debug(`🔧 State change: ${property}=${value} → ${property}${value} (no command)`);
                 this.broadcastMessage(`${property}${value}`);
             }
         });
@@ -182,9 +202,7 @@ export class WebSocketController {
 
     private sendInitialStates(ws: WebSocket): void {
         
-        // Trigger state change callbacks to broadcast initial values
-        // This ensures consistent formatting and uses the same broadcast logic
-        
+        // Send only essential initial states that aren't handled by simulation
         this.winchController.setState('mode', Mode.SAFE);
         this.winchController.setState('WPowerPotVal', 0);
         this.winchController.setState('WRegenPotVal', 0);

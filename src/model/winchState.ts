@@ -4,7 +4,7 @@ export interface WinchState {
     // Core system properties
     mode: Mode;
     
-    // Command-defined properties
+    // Command-defined properties (generated from commands.ts)
     WPowerPotVal: number;
     WRegenPotVal: number;
     WTensRPS1: number;
@@ -28,6 +28,7 @@ export interface WinchState {
     stepState: ToggleState;
     serverTime: Date;
     ssid: string;
+    winchControl: ToggleState;
     
     // Hardware pin states
     DVTrev: number;
@@ -37,7 +38,6 @@ export interface WinchState {
     DVTFS1: number;
     PSunlatch: number;
     ResBNK1: number;
-    winchControl: ToggleState;
     
     // Additional system properties
     WPowerPotValPrev: number;
@@ -69,6 +69,10 @@ export interface WinchState {
     tensionDN: number;
     preset: number;
     message: string;
+    
+    // Command-defined properties that were missing
+    tensionUp: number;
+    tensionDown: number;
 }
 
 export interface DigitalPinState {
@@ -150,6 +154,10 @@ export function createInitialWinchState(): WinchState {
         tensionUP: 10,
         tensionDN: 10,
         preset: 10,
-        message: ''
+        message: '',
+        
+        // Command-defined properties that were missing
+        tensionUp: 10,
+        tensionDown: 10
     };
 }

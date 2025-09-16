@@ -1,8 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@etek.com.au/ws-server",
-  "module": "websocket-server.ts",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./model/winchState": "./src/model/winchState.ts",
+    "./config/commands": "./src/config/commands.ts",
+    "./types/winchEnums": "./src/types/winchEnums.ts"
+  },
   "scripts": {
     "build": "bun build src/app.ts --outdir dist --target node",
     "build:watch": "bun build src/app.ts --outdir dist --target node --watch",
@@ -18,6 +26,8 @@
     "debug:break": "cross-env CONSOLE_LEVEL=debug bun --inspect-brk --watch src/app.ts",
     "debug:build": "bun run build && cross-env CONSOLE_LEVEL=debug node --inspect dist/app.js",
     "test": "jest --detectOpenHandles --forceExit",
+    "check-state-sync": "bun run scripts/check-state-sync.ts",
+    "validate-state": "bun run scripts/validate-state-consistency.ts",
     "test:zeroconf": "jest --detectOpenHandles --forceExit test/zeroConf-service.test.ts",
     "monitor": "bun scripts/monitor.ts",
     "monitor:fast": "bun scripts/monitor.ts -i 500",

@@ -2,13 +2,10 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-        "@/*": ["src/*"],
-        "@etek.com.au/logger/react-native": [
-          "../logger/dist/react-native.d.ts"
-        ],
+        "@/*": ["src/*"]
     },
     "allowJs": true,
     "esModuleInterop": true,

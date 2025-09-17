@@ -2,7 +2,23 @@ import { WebSocketServer, WebSocket } from 'ws';
 import * as os from 'os';
 import { Mode } from '@/types/winchEnums';
 import { ZeroConfService } from '@/services/zeroConfService';
-import { log, debug, error, warn } from '@etek.com.au/logger/react-native';
+import { createLogger, format, transports } from 'winston';
+
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.errors({ stack: true }),
+        format.json()
+    ),
+    transports: [
+        new transports.Console({
+            format: format.combine(
+                format.colorize(),
+                format.simple()
+            )
+        })
+    ]
+});
 import { WinchController } from '@/controllers/winchController';
 import { networkConfig } from '@/config/network';
 import { getCommandsByState } from '@/config/commands';
@@ -16,8 +32,8 @@ export class WebSocketController {
 
     constructor(winchController: WinchController) {
         this.winchController = winchController;
-        this.zeroConfService = new ZeroConfService({ 
-            port: this.WS_PORT, 
+        this.zeroConfService = new ZeroConfService({
+            port: this.WS_PORT,
             serviceName: networkConfig.serviceName,
             serviceType: networkConfig.serviceType,
             ssid: networkConfig.ssid,
@@ -27,18 +43,18 @@ export class WebSocketController {
     }
 
     public start(): void {
-        
+
         this.setupWebSocket();
-        
+
         // Wait a bit before starting simulation to ensure WebSocket is ready
         setTimeout(() => {
             this.setupIntervalLoop();
         }, 100);
-        
+
         if (this.winchController.getState().mode === Mode.SAFE) {
-            log("✅ Set winch safe");
+            logger.info("✅ Set winch safe");
         } else {
-            error("Set winch unsafe");
+            logger.error("Set winch unsafe");
         }
 
         // log("✅ initPreferences end");
@@ -50,12 +66,12 @@ export class WebSocketController {
 
             // Stop simulation through the winch controller
             this.winchController.stopSimulation();
-            
+
             if (this.intervalId) {
                 clearInterval(this.intervalId);
                 this.intervalId = null;
             }
-            
+
             // Stop ZeroConf service
             this.zeroConfService.stopService();
 
@@ -64,16 +80,16 @@ export class WebSocketController {
                 this.wss.clients.forEach((client) => {
                     client.close();
                 });
-                
+
                 // Close the WebSocket server with timeout
                 const closeTimeout = setTimeout(() => {
-                    warn('WebSocket server close timeout, forcing resolve');
+                    logger.warn('WebSocket server close timeout, forcing resolve');
                     resolve();
                 }, 2000);
-                
+
                 this.wss.close(() => {
                     clearTimeout(closeTimeout);
-                    log('🛑 WebSocket server stopped');
+                    logger.info('🛑 WebSocket server stopped');
                     resolve();
                 });
             } else {
@@ -87,29 +103,29 @@ export class WebSocketController {
         this.winchController.setStateChangeCallback((property: string, value: number | string | Date, format: string) => {
             // Find commands that use this state property
             const commands = getCommandsByState(property);
-            
+
             if (commands.length > 0) {
                 // Use the first command's format (there should typically be only one)
                 const command = commands[0];
                 if (command.format) {
                     let formattedValue = String(value);
-                    
+
                     // Apply formatting options if available
                     if (command.formatOptions?.decimalPlaces !== undefined) {
                         formattedValue = Number(value).toFixed(command.formatOptions.decimalPlaces);
                     }
-                    
+
                     const message = command.format.replace('{value}', formattedValue);
-                    debug(`🔧 State change: ${property}=${value} → ${message} (command: ${command.action})`);
+                    logger.debug(`🔧 State change: ${property}=${value} → ${message} (command: ${command.action})`);
                     this.broadcastMessage(message);
                 } else {
                     // Fallback to raw format if no format defined
-                    debug(`🔧 State change: ${property}=${value} → ${property}${value} (no format)`);
+                    logger.debug(`🔧 State change: ${property}=${value} → ${property}${value} (no format)`);
                     this.broadcastMessage(`${property}${value}`);
                 }
             } else {
                 // Fallback to raw format if no command mapping found
-                debug(`🔧 State change: ${property}=${value} → ${property}${value} (no command)`);
+                logger.debug(`🔧 State change: ${property}=${value} → ${property}${value} (no command)`);
                 this.broadcastMessage(`${property}${value}`);
             }
         });
@@ -122,29 +138,29 @@ export class WebSocketController {
 
     private setupWebSocket(): void {
         try {
-            debug(`🔌 Setting up WebSocket server on port ${this.WS_PORT}...`);
-            
+            logger.debug(`🔌 Setting up WebSocket server on port ${this.WS_PORT}...`);
+
             // Check if server already exists
             if (this.wss) {
-                warn('⚠️ WebSocket server already exists, closing previous instance');
+                logger.warn('⚠️ WebSocket server already exists, closing previous instance');
                 this.wss.close();
             }
-            
-            debug(`🔌 Creating WebSocket server on port ${this.WS_PORT}...`);
-            
+
+            logger.debug(`🔌 Creating WebSocket server on port ${this.WS_PORT}...`);
+
             // Create WebSocket server bound to all network interfaces
-            this.wss = new WebSocketServer({ 
+            this.wss = new WebSocketServer({
                 port: this.WS_PORT,
                 host: '0.0.0.0' // Bind to all interfaces for network access
             });
 
-            debug(`✅ WebSocket server created successfully on port ${this.WS_PORT}`);
+            logger.debug(`✅ WebSocket server created successfully on port ${this.WS_PORT}`);
 
             // Advertise service via ZeroConf
             this.zeroConfService.advertiseService();
 
         } catch (err) {
-            error('❌ Error setting up WebSocket server:', err);
+            logger.error('❌ Error setting up WebSocket server:', err);
             throw err;
         }
 
@@ -153,7 +169,7 @@ export class WebSocketController {
             const forwardedFor = req.headers['x-forwarded-for'];
             const realIP = typeof forwardedFor === 'string' ? forwardedFor.split(',')[0] : clientIP;
 
-            log(`🔗 Client connected from IP: ${realIP}`);
+            logger.info(`🔗 Client connected from IP: ${realIP}`);
             this.sendInitialStates(ws);
 
             // Set up ping/pong heartbeat via messages
@@ -167,41 +183,41 @@ export class WebSocketController {
 
             ws.on('message', (message) => {
                 const msg = message.toString();
-                
+
                 // Handle pong response
                 if (msg === 'pong') {
-                    log(`💓 Pong received from ${realIP}`);
+                    logger.info(`💓 Pong received from ${realIP}`);
                     return;
                 }
-                
+
                 // Handle regular messages
                 this.handleWebSocketMessage(msg, ws);
             });
 
             ws.on('close', (code, reason) => {
-                log(`🔌 Client disconnected from IP: ${realIP}`);
-                log(`   Close Code: ${code}`);
-                log(`   Close Reason: ${reason || 'No reason provided'}`);
-                log(`   Was Clean: ${code === 1000}`);
+                logger.info(`🔌 Client disconnected from IP: ${realIP}`);
+                logger.info(`   Close Code: ${code}`);
+                logger.info(`   Close Reason: ${reason || 'No reason provided'}`);
+                logger.info(`   Was Clean: ${code === 1000}`);
                 clearInterval(pingInterval);
             });
 
             ws.on('error', (error) => {
-                log(`❌ WebSocket error from ${realIP}:`, error);
-                log(`   Error Message: ${error.message || 'No message'}`);
+                logger.info(`❌ WebSocket error from ${realIP}:`, error);
+                logger.info(`   Error Message: ${error.message || 'No message'}`);
                 clearInterval(pingInterval);
             });
         });
 
         // Get local IP for display purposes
         const localIP = this.getLocalIP();
-        log(`🌐 WebSocket server is listening on:`);
-        log(`   Local: ws://127.0.0.1:${this.WS_PORT}`);
-        log(`   Network: ws://${localIP}:${this.WS_PORT}`);
+        logger.info(`🌐 WebSocket server is listening on:`);
+        logger.info(`   Local: ws://127.0.0.1:${this.WS_PORT}`);
+        logger.info(`   Network: ws://${localIP}:${this.WS_PORT}`);
     }
 
     private sendInitialStates(ws: WebSocket): void {
-        
+
         // Send only essential initial states that aren't handled by simulation
         this.winchController.setState('mode', Mode.SAFE);
         this.winchController.setState('WPowerPotVal', 0);
@@ -219,12 +235,12 @@ export class WebSocketController {
 
     private setupIntervalLoop(): void {
         // Simulation is now started automatically in WinchController constructor
-        
+
         // Set up a separate interval for safety system checks
         this.intervalId = setInterval(() => {
             this.checkSafetySystems();
         }, 1000); // Reduced from 100ms to 1000ms (1 second)
-        
+
     }
 
     private checkSafetySystems(): void {
@@ -234,17 +250,17 @@ export class WebSocketController {
 
     private broadcastMessage(message: string): void {
         if (this.wss && this.wss.clients) {
-            
+
             this.wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
-                    debug(`🔊 Broadcasting message to client: ${message}`);
+                    logger.debug(`🔊 Broadcasting message to client: ${message}`);
                     client.send(message);
                 } else {
-                    warn(`Client not ready, state: ${client.readyState}`);
+                    logger.warn(`Client not ready, state: ${client.readyState}`);
                 }
             });
         } else {
-            warn('WebSocket server or clients not available');
+            logger.warn('WebSocket server or clients not available');
         }
     }
 

@@ -1,5 +1,21 @@
 
-import { log, debug } from '@etek.com.au/logger/react-native';
+import { createLogger, format, transports } from 'winston';
+
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.errors({ stack: true }),
+        format.json()
+    ),
+    transports: [
+        new transports.Console({
+            format: format.combine(
+                format.colorize(),
+                format.simple()
+            )
+        })
+    ]
+});
 import { WinchController } from '@/controllers/winchController';
 import { Mode } from '@/types/winchEnums';
 
@@ -70,11 +86,11 @@ export class SimulationManager {
      */
     public start(): void {
         if (this.isRunning) {
-            log('⚠️ Simulation is already running');
+            logger.info('⚠️ Simulation is already running');
             return;
         }
 
-        log('🚀 Starting simulation...');
+        logger.info('🚀 Starting simulation...');
         this.isRunning = true;
         this.startTime = Date.now();
 
@@ -98,7 +114,7 @@ export class SimulationManager {
             this.updateRPM();
         }, this.config.rpmInterval);
 
-        debug(`✅ Simulation started with intervals: Main=${this.config.updateInterval}ms, 
+        logger.debug(`✅ Simulation started with intervals: Main=${this.config.updateInterval}ms, 
             Temp=${this.config.motorTemperatureInterval}ms, Battery=${this.config.batteryVoltageInterval}ms, RPM=${this.config.rpmInterval}ms`);
         // Simulation started - no callback needed
     }
@@ -108,11 +124,11 @@ export class SimulationManager {
      */
     public stop(): void {
         if (!this.isRunning) {
-            log('⚠️ Simulation is not running');
+            logger.info('⚠️ Simulation is not running');
             return;
         }
 
-        log('🛑 Stopping simulation...');
+        logger.info('🛑 Stopping simulation...');
         this.isRunning = false;
 
         // Clear all intervals
@@ -189,7 +205,7 @@ export class SimulationManager {
 
         const time = this.currentTime;
         const frequency = this.config.frequency;
-        
+
         // Simulate RPM and power based on winch mode
         if (mode === Mode.TOW) {
             // Tow operation: oscillate between -500 and +500 RPM

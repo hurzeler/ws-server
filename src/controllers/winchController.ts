@@ -1,4 +1,20 @@
-import { log, warn, debug } from '@etek.com.au/logger/react-native';
+import { createLogger, format, transports } from 'winston';
+
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.errors({ stack: true }),
+        format.json()
+    ),
+    transports: [
+        new transports.Console({
+            format: format.combine(
+                format.colorize(),
+                format.simple()
+            )
+        })
+    ]
+});
 import { WinchState, createInitialWinchState } from '@/model/winchState';
 import { ToggleState, SafeStopState, Mode } from '@/types/winchEnums';
 import { SimulationManager } from '@/simulation/simulation';
@@ -11,15 +27,15 @@ export class WinchController {
     private stateChangeCallback?: (property: StateKey, value: number | string | Date, format: string) => void;
     private broadcastCallback?: (message: string) => void;
     private simulation: SimulationManager;
-    
+
     // Constants from Arduino code
     private readonly HIGH_RPM_THRESHOLD = 250;
     private readonly LOW_RPM_THRESHOLD = 100;
     private readonly DEBOUNCE_TIME = 500; // 500ms debounce time
     private readonly DEBOUNCE_TIME_LSMSG = 50;
     private readonly DEBOUNCE_TIME_SAFE = 50;
-    
-    
+
+
     // Linear curve configuration
     public readonly linearCurve = {
         x1: 1.233,
@@ -27,7 +43,7 @@ export class WinchController {
         x2: 2.3220,
         y2: 23.97
     };
-    
+
     // Debounce timing variables
     private highRpmStartTime = 0;
     private lowRpmStartTime = 0;
@@ -45,19 +61,19 @@ export class WinchController {
     constructor() {
         // Initialize state with all default values
         this.state = createInitialWinchState();
-        
+
         // Initialize simulation
         this.simulation = new SimulationManager(this);
-        
+
         // Set up simulation to get winch state
         this.simulation.setWinchStateGetter(() => this.getState());
-        
+
         // Start simulation
         this.simulation.start();
     }
 
     // ===== CONTROL METHODS (from Arduino) =====
-    
+
     public btnSafeStopST(): void {
         // Set button states
         this.state.safeStopState = SafeStopState.STOPPED;
@@ -182,13 +198,13 @@ export class WinchController {
     }
 
     // ===== STATE MANAGEMENT =====
-    
+
     public getState(): WinchState {
         return { ...this.state };
     }
-    
+
     public setStateChangeCallback(callback: (property: StateKey, value: number | string | Date, format: string) => void): void {
-        this.stateChangeCallback = callback;    
+        this.stateChangeCallback = callback;
     }
 
     public setBroadcastCallback(callback: (message: string) => void): void {
@@ -212,12 +228,12 @@ export class WinchController {
         const commandConfig = getCommandByAction(commandAction);
         if (commandConfig && commandConfig.format) {
             let formattedValue = value;
-            
+
             // Apply formatting options if available
             if (commandConfig.formatOptions?.decimalPlaces !== undefined) {
                 formattedValue = Number(value).toFixed(commandConfig.formatOptions.decimalPlaces);
             }
-            
+
             const message = commandConfig.format.replace('{value}', formattedValue);
             this.broadcastMessage(message);
         } else {
@@ -225,7 +241,7 @@ export class WinchController {
             this.broadcastMessage(`${commandAction}${value}`);
         }
     }
-    
+
     private getCurrentState() {
         return this.state;
     }
@@ -450,42 +466,42 @@ export class WinchController {
     public AnaloguePowerChange(): void {
         const { WPowerPotVal, WPowerPotValPrev } = this.getCurrentState();
         let newWPowerPotVal = WPowerPotVal;
-        
+
         if (newWPowerPotVal > 100) {
             newWPowerPotVal = 100;
         }
         if (newWPowerPotVal < 0) {
-            warn(`WPowerPotVal negative: ${newWPowerPotVal}, changed to 0`);
+            logger.warn(`WPowerPotVal negative: ${newWPowerPotVal}, changed to 0`);
             newWPowerPotVal = 0;
         }
-        
+
         if (newWPowerPotVal !== WPowerPotValPrev) {
             const WPowerPotValMapped = this.mapValue(newWPowerPotVal, 0, 100, 18, 254);
             this.state.WPowerPotValMapped = WPowerPotValMapped;
             this.state.WPowerPotVal = newWPowerPotVal;
             this.state.WPowerPotValPrev = newWPowerPotVal;
-            debug(`📤 vWP${newWPowerPotVal}`);
+            logger.debug(`📤 vWP${newWPowerPotVal}`);
         }
     }
 
     public AnalogueRegenChange(): void {
         const { WRegenPotVal, WRegenPotValPrev } = this.getCurrentState();
         let newWRegenPotVal = WRegenPotVal;
-        
+
         if (newWRegenPotVal > 100) {
             newWRegenPotVal = 100;
         }
         if (newWRegenPotVal < 0) {
-            warn(`WRegenPotVal negative: ${newWRegenPotVal}, changed to 0`);
+            logger.warn(`WRegenPotVal negative: ${newWRegenPotVal}, changed to 0`);
             newWRegenPotVal = 0;
         }
-        
+
         if (newWRegenPotVal !== WRegenPotValPrev) {
             const WRegenPotValMapped = this.mapValue(newWRegenPotVal, 0, 100, 18, 254);
             this.state.WRegenPotValMapped = WRegenPotValMapped;
             this.state.WRegenPotVal = newWRegenPotVal;
             this.state.WRegenPotValPrev = newWRegenPotVal;
-            debug(`📤 vWR${newWRegenPotVal}`);
+            logger.debug(`📤 vWR${newWRegenPotVal}`);
         }
     }
 
@@ -493,7 +509,7 @@ export class WinchController {
 
     public processRadio(radioIn: number): void {
         const { payinState, stepState, payoutState } = this.getCurrentState();
-        
+
         if (payinState === 0 || stepState === 0) {
             this.applyPayIn(radioIn);
         }
@@ -512,7 +528,7 @@ export class WinchController {
 
     public applyPayIn(radioIn: number): void {
         const { WPowerPotVal, WTensRPS3, WTensRPS2, WTensRPS1 } = this.getCurrentState();
-        
+
         if (radioIn === 2) { // UP incremental
             const newVal = WPowerPotVal + WTensRPS3;
             this.state.WPowerPotVal = newVal;
@@ -537,7 +553,7 @@ export class WinchController {
 
     public applyPayOut(radioIn: number): void {
         const { WRegenPotVal, WTensRPS3, WTensRPS2, WTensRPS1 } = this.getCurrentState();
-        
+
         if (radioIn === 2) { // UP incremental
             const newVal = WRegenPotVal + WTensRPS3;
             this.state.WRegenPotVal = newVal;
@@ -562,7 +578,7 @@ export class WinchController {
 
     public checkRadio(radioIn: number): void {
         const { winchControl, payinState, payoutState, stepState } = this.getCurrentState();
-        
+
         if (winchControl === 0) {
             if (payinState === 0 || payoutState === 0 || stepState === 0) {
                 this.processRadio(radioIn);
@@ -609,7 +625,7 @@ export class WinchController {
 
     public reviewStep(): void {
         const { WPowerPotVal } = this.getCurrentState();
-        
+
         if (WPowerPotVal <= 8) {
             this.DVTrevOFF();
             this.DVTDS3OFF();
@@ -621,7 +637,7 @@ export class WinchController {
 
     public reviewPayin(): void {
         const { WPowerPotVal, DVTDS2, DVTDS1, DVTFS1 } = this.getCurrentState();
-        
+
         if (WPowerPotVal === 0) {
             if (DVTDS2 === 1) this.DVTDS2OFF();
             if (DVTDS1 === 1) this.DVTDS1OFF();
@@ -636,13 +652,13 @@ export class WinchController {
                 this.DVTFS1ON();
             }
         }
-        
+
         this.reviewPayinRPM();
     }
 
     public reviewPayout(): void {
         const { WRegenPotVal } = this.getCurrentState();
-        
+
         if (WRegenPotVal === 0) {
             this.DVTDS3OFF();
         } else {
@@ -652,7 +668,7 @@ export class WinchController {
 
     public processTension(): void {
         const { stepState, payinState, payoutState } = this.getCurrentState();
-        
+
         if (stepState === 0) {
             this.reviewStep();
         }
@@ -668,7 +684,7 @@ export class WinchController {
 
     public checkLSMSG(): void {
         const currentState = Math.random() > 0.5 ? 1 : 0; // Simulate button reading
-        
+
         if (currentState !== this.lastFlickerableState) {
             this.lastDebounceTime = Date.now();
             this.lastFlickerableState = currentState;
@@ -676,20 +692,20 @@ export class WinchController {
 
         if ((Date.now() - this.lastDebounceTime) > this.DEBOUNCE_TIME_LSMSG) {
             if (this.lastSteadyState === 1 && currentState === 0) {
-                log("The LSMSG button is pressed");
+                logger.info("The LSMSG button is pressed");
                 this.state.lineStopActive = 0;
             }
 
             if (this.lastSteadyState === 0 && currentState === 1) {
-                log("The LSMSG button is triggered");
-            const currentLSMSGcnt = this.getCurrentState().LSMSGcnt || 0;
+                logger.info("The LSMSG button is triggered");
+                const currentLSMSGcnt = this.getCurrentState().LSMSGcnt || 0;
                 this.state.LSMSGcnt = currentLSMSGcnt + 1;
                 this.state.lineStopActive = 1;
-                debug(`📤 vBL${currentLSMSGcnt + 1}`);
+                logger.debug(`📤 vBL${currentLSMSGcnt + 1}`);
 
-            if (this.getCurrentState().hallRPM <= 0) {
-                this.processLineStop();
-            }
+                if (this.getCurrentState().hallRPM <= 0) {
+                    this.processLineStop();
+                }
             }
             this.lastSteadyState = currentState;
         }
@@ -697,7 +713,7 @@ export class WinchController {
 
     public checkSafeState(): void {
         const currentStateSS = Math.random() > 0.5 ? 1 : 0; // Simulate button reading
-        
+
         if (currentStateSS !== this.lastFlickerableStateSS) {
             this.lastDebounceTimeSS = Date.now();
             this.lastFlickerableStateSS = currentStateSS;
@@ -705,13 +721,13 @@ export class WinchController {
 
         if ((Date.now() - this.lastDebounceTimeSS) > this.DEBOUNCE_TIME_SAFE) {
             if (this.lastSteadyStateSS === 1 && currentStateSS === 0) {
-                log("The SS button is off");
+                logger.info("The SS button is off");
                 this.state.safeStateActive = 0;
                 this.processSafeStateOff();
             }
 
             if (this.lastSteadyStateSS === 0 && currentStateSS === 1) {
-                log("The SS button is on");
+                logger.info("The SS button is on");
                 this.state.safeStateActive = 1;
                 this.processSafeStateOn();
             }
@@ -721,19 +737,19 @@ export class WinchController {
 
     public processSafeStateOn(): void {
         const state = this.getCurrentState();
-        debug(`📤 vSS${state.safeStateActive}`);
+        logger.debug(`📤 vSS${state.safeStateActive}`);
         this.btnSafeStopST();
     }
 
     public processSafeStateOff(): void {
         const state = this.getCurrentState();
-        debug(`📤 vSS${state.safeStateActive}`);
+        logger.debug(`📤 vSS${state.safeStateActive}`);
         this.btnSafeStopST();
     }
 
     public processLineStop(): void {
         const state = this.getCurrentState();
-        
+
         if (state.stepState === 0) {
             this.state.WPowerPotVal = 0;
             this.state.WRegenPotVal = 0;
@@ -791,17 +807,17 @@ export class WinchController {
         // Extract command from message (e.g., "sSS" from "sSS1")
         const command = message.match(/^[a-zA-Z]+/)?.[0];
         if (!command) {
-            warn(`Unknown message format: ${message}`);
+            logger.warn(`Unknown message format: ${message}`);
             return;
         }
 
         // Find command configuration by action or format prefix
         let commandConfig = getCommandByAction(command);
-        
+
         // If not found by action, try to find by format prefix
         if (!commandConfig) {
             const allCommands = commandsConfig.commandGroups.flatMap(group => group.commands);
-            commandConfig = allCommands.find(cmd => 
+            commandConfig = allCommands.find(cmd =>
                 cmd.format && command.startsWith(cmd.format.replace('{value}', '').replace(/[{}]/g, ''))
             );
         }
@@ -809,18 +825,18 @@ export class WinchController {
         if (commandConfig) {
             const methodName = this.getMethodNameFromCommand(commandConfig);
             if (methodName && typeof (this as any)[methodName] === 'function') {
-                log(`🔧 Executing method: ${methodName} for command: ${command} (${commandConfig.description})`);
+                logger.info(`🔧 Executing method: ${methodName} for command: ${command} (${commandConfig.description})`);
                 (this as any)[methodName]();
             } else {
-                warn(`No handler method found for command: ${command} (${commandConfig.description})`);
+                logger.warn(`No handler method found for command: ${command} (${commandConfig.description})`);
             }
         } else {
             // Try to find method by exact name match for backward compatibility
             if (typeof (this as any)[command] === 'function') {
-                log(`🔧 Executing method by name: ${command}`);
+                logger.info(`🔧 Executing method by name: ${command}`);
                 (this as any)[command]();
             } else {
-                warn(`No command configuration or handler found for: ${command}`);
+                logger.warn(`No command configuration or handler found for: ${command}`);
             }
         }
     }
@@ -865,7 +881,7 @@ export class WinchController {
     // ===== COMMAND MANAGEMENT =====
 
     public getAvailableCommands(): string[] {
-        return commandsConfig.commandGroups.flatMap(group => 
+        return commandsConfig.commandGroups.flatMap(group =>
             group.commands.map(cmd => cmd.action)
         );
     }

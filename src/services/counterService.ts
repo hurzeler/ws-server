@@ -1,6 +1,23 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { log, debug, error, warn } from '@etek.com.au/logger/react-native';
+import { createLogger, format, transports } from 'winston';
+
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.timestamp(),
+        format.errors({ stack: true }),
+        format.json()
+    ),
+    transports: [
+        new transports.Console({
+            format: format.combine(
+                format.colorize(),
+                format.simple()
+            )
+        })
+    ]
+});
 
 export class CounterService {
     private static instance: CounterService;
@@ -32,11 +49,11 @@ export class CounterService {
                 const data = fs.readFileSync(this.counterFilePath, 'utf8');
                 this.currentCount = parseInt(data, 10) || 0;
             } else {
-                debug('📊 No existing counter file found, starting from 0');
+                logger.debug('📊 No existing counter file found, starting from 0');
                 this.currentCount = 0;
             }
         } catch (error) {
-            warn('Error loading counter file, starting from 0:', error);
+            logger.warn('Error loading counter file, starting from 0:', error);
             this.currentCount = 0;
         }
     }
@@ -48,7 +65,7 @@ export class CounterService {
         try {
             fs.writeFileSync(this.counterFilePath, this.currentCount.toString(), 'utf8');
         } catch (err) {
-            error('Error saving counter file:', err);
+            logger.error('Error saving counter file:', err);
         }
     }
 
@@ -74,7 +91,7 @@ export class CounterService {
     public reset(): void {
         this.currentCount = 0;
         this.saveCounter();
-        log('🔄 Counter reset to 0');
+        logger.info('🔄 Counter reset to 0');
     }
 
     /**

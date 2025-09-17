@@ -36,7 +36,6 @@
     "start:node": "cross-env NODE_ENV=production node --loader ts-node/esm src/app.ts",
     "start:monitor:node": "cross-env NODE_ENV=production node --loader ts-node/esm src/app.ts --monitor",
     "dev": "bun run build:watch",
-    "prepare": "bun run build",
     "dev:headless": "cross-env CONSOLE_LEVEL=debug bun --watch src/app.ts --headless",
     "dev:node": "cross-env CONSOLE_LEVEL=debug ts-node --esm src/app.ts",
     "debug": "cross-env CONSOLE_LEVEL=debug bun --inspect --watch src/app.ts",
@@ -60,7 +59,6 @@
     "@": "./dist"
   },
   "dependencies": {
-    "@etek.com.au/logger": "link:@etek.com.au/logger",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.17.1",
     "@types/ws": "^8.5.10",
@@ -69,6 +67,7 @@
     "module-alias": "^2.2.3",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
+    "winston": "^3.17.0",
     "ws": "8.14.2"
   },
   "devDependencies": {

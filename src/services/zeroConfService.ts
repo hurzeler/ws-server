@@ -1,5 +1,21 @@
 import bonjour from 'bonjour';
-import { log, error } from '@etek.com.au/logger/react-native';
+import { createLogger, format, transports } from 'winston';
+
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.errors({ stack: true }),
+        format.json()
+    ),
+    transports: [
+        new transports.Console({
+            format: format.combine(
+                format.colorize(),
+                format.simple()
+            )
+        })
+    ]
+});
 
 
 export interface ZeroConfConfig {
@@ -52,11 +68,11 @@ export class ZeroConfService {
      * Matching exactly what the Arduino BonjourService advertises
      */
     public advertiseService(): void {
-        try {            
+        try {
             // Advertise via mDNS/Bonjour (for React Native Zeroconf)
             this.advertiseMDNS();
         } catch (err) {
-            error('❌ Error advertising service:', err);
+            logger.error('❌ Error advertising service:', err);
         }
     }
 
@@ -64,7 +80,7 @@ export class ZeroConfService {
      * Advertise service via mDNS/Bonjour protocol
      */
     private advertiseMDNS(): void {
-        try {            
+        try {
             // Validate required properties
             if (!this.config.port) {
                 throw new Error('port is required for mDNS advertisement');
@@ -104,10 +120,10 @@ export class ZeroConfService {
             // Store the service info after successful advertisement
             this.storeServiceInfo();
 
-            log(`🌐 mDNS service advertised: ${this.config.serviceName} (_ws._tcp) on port ${this.config.port}`);
+            logger.info(`🌐 mDNS service advertised: ${this.config.serviceName} (_ws._tcp) on port ${this.config.port}`);
 
         } catch (err) {
-            error('❌ Error advertising mDNS service:', err);
+            logger.error('❌ Error advertising mDNS service:', err);
         }
     }
 
@@ -126,7 +142,7 @@ export class ZeroConfService {
      */
     public updateServiceStatus(status: string): void {
         try {
-            log(`🔄 Updating service status to: ${status}`);
+            logger.info(`🔄 Updating service status to: ${status}`);
             // In a real mDNS implementation, this would update the TXT records
             // For now, we'll update the config
             this.config.status = status;
@@ -134,7 +150,7 @@ export class ZeroConfService {
             // Note: To update mDNS TXT records in real-time, we'd need to
             // stop and restart the advertisement with new TXT data
         } catch (err) {
-            error(`❌ Warning: Failed to update service status to: ${status}`, err);
+            logger.error(`❌ Warning: Failed to update service status to: ${status}`, err);
         }
     }
 
@@ -143,7 +159,7 @@ export class ZeroConfService {
      */
     public updateWebSocketState(state: string): void {
         try {
-            log(`🔄 Updating WebSocket state to: ${state}`);
+            logger.info(`🔄 Updating WebSocket state to: ${state}`);
             // In a real mDNS implementation, this would update the TXT records
             // For now, we'll update the config
             this.config.state = state;
@@ -151,7 +167,7 @@ export class ZeroConfService {
             // Note: To update mDNS TXT records in real-time, we'd need to
             // stop and restart the advertisement with new TXT data
         } catch (err) {
-            error(`❌ Warning: Failed to update WebSocket state to: ${state}`, err);
+            logger.error(`❌ Warning: Failed to update WebSocket state to: ${state}`, err);
         }
     }
 
@@ -164,9 +180,9 @@ export class ZeroConfService {
             try {
                 this.bonjourInstance.destroy();
                 this.bonjourInstance = null;
-                log(`🛑 mDNS service stopped: ${this.config.serviceName}`);
+                logger.info(`🛑 mDNS service stopped: ${this.config.serviceName}`);
             } catch (err) {
-                error('❌ Error stopping mDNS service:', err);
+                logger.error('❌ Error stopping mDNS service:', err);
             }
         }
 

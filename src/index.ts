@@ -5,7 +5,7 @@ export * from './types/winchEnums';
 export * from './utils/stateGenerator';
 
 // Export controllers
-export { WinchController } from './controllers/winchController';
+// WinchController excluded - uses winston logger, not compatible with React Native
 // WebSocketController excluded - uses Node.js ws module, not compatible with React Native
 
 // Export services

@@ -22,7 +22,14 @@
     "./types/winchEnums": {
       "import": "./dist/types/winchEnums.js",
       "types": "./dist/types/winchEnums.d.ts"
+    },
+    "./types/*": {
+      "import": "./dist/types/*.js",
+      "types": "./dist/types/*.d.ts"
     }
+  },
+  "react-native": {
+    "winston": false
   },
   "files": [
     "dist"
@@ -65,6 +72,7 @@
     "bonjour": "^3.5.0",
     "jest": "^29.7.0",
     "module-alias": "^2.2.3",
+    "react-native-logs": "^5.5.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "winston": "^3.17.0",

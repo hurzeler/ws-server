@@ -196,9 +196,9 @@ export class WebSocketController {
 
             ws.on('close', (code, reason) => {
                 logger.info(`🔌 Client disconnected from IP: ${realIP}`);
-                logger.info(`   Close Code: ${code}`);
-                logger.info(`   Close Reason: ${reason || 'No reason provided'}`);
-                logger.info(`   Was Clean: ${code === 1000}`);
+                logger.debug(`   Close Code: ${code}`);
+                logger.debug(`   Close Reason: ${reason || 'No reason provided'}`);
+                logger.debug(`   Was Clean: ${code === 1000}`);
                 clearInterval(pingInterval);
             });
 

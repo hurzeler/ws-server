@@ -843,7 +843,7 @@ export class WinchController {
 
     private getMethodNameFromCommand(commandConfig: any): string {
         // Command actions already match method names, just return the action
-        return commandConfig.action;
+        return commandConfig.function;
     }
 
     // ===== UTILITY METHODS =====

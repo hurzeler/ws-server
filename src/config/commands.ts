@@ -1,5 +1,6 @@
 export interface Command {
     action: string;
+    function?: string;
     description: string;
     format?: string;
     state?: string;
@@ -23,27 +24,33 @@ export const commandsConfig: CommandsConfig = {
             category: "control",
             commands: [
                 {
-                    action: "btnSafeStopST",
+                    action: "EmStopST",
+                    function: "btnSafeStopST",
                     description: "Emergency Stop"
                 },
                 {
-                    action: "btnPayinST",
+                    action: "PayinST",
+                    function: "btnPayinST",
                     description: "Payin Start"
                 },
                 {
-                    action: "stepST",
+                    action: "StepST",
+                    function: "stepST",
                     description: "Step"
                 },
                 {
-                    action: "btnPayoutST",
+                    action: "PayoutST",
+                    function: "btnPayoutST",
                     description: "Payout Start"
                 },
                 {
-                    action: "btnWinchCN",
+                    action: "WinchCN",
+                    function: "btnWinchCN",
                     description: "Winch Control"
                 },
                 {
-                    action: "btnPilotCN",
+                    action: "PilotCN",
+                    function: "btnPilotCN",
                     description: "Pilot Control"
                 }
             ]
@@ -299,6 +306,44 @@ export const getCommandsByCategory = (category: 'control' | 'getter' | 'setter')
 
 export const getCommandsByState = (state: string): Command[] => {
     return allCommands.filter(cmd => cmd.state === state);
+};
+
+// Get function name by action (for control commands that have function mapping)
+export const getFunctionByAction = (action: string): string | undefined => {
+    const command = getCommandByAction(action);
+    return command?.function || command?.action;
+};
+
+// Execute function by action name (handles both direct actions and function mappings)
+export const executeAction = (controller: any, action: string): boolean => {
+    const functionName = getFunctionByAction(action);
+    if (functionName && typeof controller[functionName] === 'function') {
+        controller[functionName]();
+        return true;
+    }
+    return false;
+};
+
+// Execute both action and function if they exist and are different
+export const executeBothActions = (controller: any, action: string): boolean => {
+    const command = getCommandByAction(action);
+    if (!command) return false;
+    
+    let success = false;
+    
+    // Execute the action directly if it exists as a function
+    if (typeof controller[action] === 'function') {
+        controller[action]();
+        success = true;
+    }
+    
+    // Execute the mapped function if it exists and is different from action
+    if (command.function && command.function !== action && typeof controller[command.function] === 'function') {
+        controller[command.function]();
+        success = true;
+    }
+    
+    return success;
 };
 
 // Generate regex pattern for message handlers from getter commands

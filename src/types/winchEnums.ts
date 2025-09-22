@@ -14,6 +14,6 @@ export enum ToggleState {
 
 // Safe stop state values
 export enum SafeStopState {
-    RUNNING = 0,
-    STOPPED = 1
+    RUNNING = 1,
+    STOPPED = 0
 }

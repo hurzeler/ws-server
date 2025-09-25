@@ -94,7 +94,7 @@ export const commandsConfig: CommandsConfig = {
           state: "WRegenPotVal"
         },
         {
-          action: "getWPCVal",
+          action: "getPCVal",
           description: "Get Pulse Count Value",
           format: "vPC{value}",
           state: "pulseCount"
@@ -195,49 +195,49 @@ export const commandsConfig: CommandsConfig = {
           action: "setWPowerPotVal",
           description: "Set Winch Power Value",
           state: "WPowerPotVal",
-          format: "wsPowerPot(\\d+)"
+          format: "wsPowerPot{value}"
         },
         {
           action: "setWRegenPotVal",
           description: "Set Winch Regen Value",
           state: "WRegenPotVal",
-          format: "wsRegen(\\d+)"
+          format: "wsRegen{value}"
         },
         {
           action: "setWTensRPS1",
           description: "Set Tension RPS 1 Value",
           state: "WTensRPS1",
-          format: "WTRTUv(\\d+)"
+          format: "WTRTUv{value}"
         },
         {
           action: "setWTensRPS2",
           description: "Set Tension RPS 2 Value",
           state: "WTensRPS2",
-          format: "WTRLAv(\\d+)"
+          format: "WTRLAv{value}"
         },
         {
           action: "setWTensRPS3",
           description: "Set Tension RPS 3 Value",
           state: "WTensRPS3",
-          format: "WTRPLv(\\d+)"
+          format: "WTRPLv{value}"
         },
         {
           action: "setPulseCountLimit",
           description: "Set Pulse Count Stop Limit",
           state: "pulseCountLimit",
-          format: "WPCSVal(\\d+)"
+          format: "WPCSVal{value}"
         },
         {
           action: "setPulseCountStopStatus",
           description: "Set Pulse Count Stop Status",
           state: "pulseCountStopStatus",
-          format: "WPCSSta(\\d+)"
+          format: "WPCSSta{value}"
         },
         {
           action: "setRSSIVal",
           description: "Set RSSI Value",
           state: "RSSIVal",
-          format: "sRS(\\d+)"
+          format: "sRS{value}"
         },
         {
           action: "setMotorTemperature",
@@ -255,22 +255,25 @@ export const commandsConfig: CommandsConfig = {
           action: "setHallRPM",
           description: "Set Hall RPM Value",
           state: "hallRPM",
-          format: "sRP(\\d+)"
+          format: "sRP{value}"
         },
         {
           action: "setTensionUp",
           description: "Set Tension Up",
-          state: "tensionUp"
+          state: "tensionUp",
+          format: "setTensionUp{value}"
         },
         {
           action: "setTensionDown",
           description: "Set Tension Down",
-          state: "tensionDown"
+          state: "tensionDown",
+          format: "setTensionDown{value}"
         },
         {
           action: "setPreset",
           description: "Set Preset Value",
-          state: "preset"
+          state: "preset",
+          format: "setPreset{value}"
         }
       ]
     }

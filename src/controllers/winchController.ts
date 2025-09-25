@@ -95,7 +95,7 @@ export class WinchController {
         this.wsStepState();
         this.wsPayOutState();
         this.wsSafeStopState();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
 
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.state.mode = Mode.SAFE;
@@ -122,7 +122,7 @@ export class WinchController {
         this.wsPayOutState();
         this.wsSafeStopState();
         this.wsPowerState();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
 
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.unLatchPS();
@@ -150,7 +150,7 @@ export class WinchController {
         this.wsSafeStopState();
         this.wsPowerState();
         this.wsStepState();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
 
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.unLatchPS();
@@ -178,7 +178,7 @@ export class WinchController {
         this.wsPowerState();
         this.wsStepState();
         this.wsPayOutState();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
 
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.unLatchPS();
@@ -188,13 +188,13 @@ export class WinchController {
     public btnPilotCN(): void {
         this.state.winchControl = ToggleState.OFF;
         this.btnSafeStopST();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
     }
 
     public btnWinchCN(): void {
         this.state.winchControl = ToggleState.ON;
         this.btnSafeStopST();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
     }
 
     // ===== STATE MANAGEMENT =====
@@ -247,120 +247,8 @@ export class WinchController {
     }
 
     // ===== GETTER METHODS (from Arduino) =====
-
-    public getEmSST(): void {
-        const { safeStopState } = this.getCurrentState();
-        this.broadcastStateMessage('getEmSST', safeStopState);
-    }
-
-
-    public getPayinST(): void {
-        const { payinState } = this.getCurrentState();
-        this.broadcastStateMessage('getPayinST', payinState);
-    }
-
-    public getStepST(): void {
-        const { stepState } = this.getCurrentState();
-        this.broadcastStateMessage('getStepST', stepState);
-    }
-
-    public getPayoutST(): void {
-        const { payoutState } = this.getCurrentState();
-        this.broadcastStateMessage('getPayoutST', payoutState);
-    }
-
-    public getMode(): void {
-        const { mode } = this.getCurrentState();
-        this.broadcastStateMessage('getMode', mode);
-    }
-
-    public getCN(): void {
-        const { winchControl } = this.getCurrentState();
-        this.broadcastStateMessage('getCN', winchControl);
-    }
-
-    public getWPwVal(): void {
-        const { WPowerPotVal } = this.getCurrentState();
-        this.broadcastStateMessage('getWPwVal', WPowerPotVal);
-    }
-
-    public getWRgVal(): void {
-        const { WRegenPotVal } = this.getCurrentState();
-        this.broadcastStateMessage('getWRgVal', WRegenPotVal);
-    }
-
-    public getPCVal(): void {
-        const { pulseCount } = this.getCurrentState();
-        this.broadcastStateMessage('getWPCVal', pulseCount);
-    }
-
-    public getPCSVal(): void {
-        const { pulseCountLimit } = this.getCurrentState();
-        this.broadcastStateMessage('getWPCSVal', pulseCountLimit);
-        this.getPCSSta();
-    }
-
-    public getPCSSta(): void {
-        const { pulseCountStopStatus } = this.getCurrentState();
-        this.broadcastStateMessage('getWPCSSta', pulseCountStopStatus);
-    }
-
-    public getRSSIVal(): void {
-        const { RSSIVal } = this.getCurrentState();
-        this.broadcastStateMessage('getRSSIVal', RSSIVal);
-    }
-
-    public getSSVal(): void {
-        const { safeStateActive } = this.getCurrentState();
-        this.broadcastStateMessage('getSSVal', safeStateActive);
-    }
-
-    public getLSVal(): void {
-        const { LSMSGcnt } = this.getCurrentState();
-        this.broadcastStateMessage('getLSVal', LSMSGcnt);
-    }
-
-    public getRPMVal(): void {
-        const { hallRPM } = this.getCurrentState();
-        this.broadcastStateMessage('getRPMVal', hallRPM);
-    }
-
-    public getTNDir(): void {
-        const { direct } = this.getCurrentState();
-        this.broadcastStateMessage('getTNDir', direct);
-    }
-
-    public getVBATVal(): void {
-        const { VBAT } = this.getCurrentState();
-        this.broadcastStateMessage('getVBATVal', VBAT);
-    }
-
-    public getSSIDVal(): void {
-        const { ssid } = this.getCurrentState();
-        this.broadcastStateMessage('getSSIDVal', ssid);
-    }
-
-    public getAC(): void {
-        const { counter } = this.getCurrentState();
-        // Note: This logic seems incorrect - comparing counter to itself will always be false
-        // Keeping original Arduino logic but this should probably be fixed
-        this.broadcastStateMessage('getAC', counter);
-    }
-
-    public getMT(): void {
-        const { motorTemperature } = this.getCurrentState();
-        this.broadcastStateMessage('getMT', motorTemperature);
-    }
-
-    public getMB(): void {
-        const { mainBatteryVoltage } = this.getCurrentState();
-        this.broadcastStateMessage('getMB', mainBatteryVoltage);
-    }
-
-    public getTime(): void {
-        const now = new Date();
-        this.broadcastStateMessage('getTime', now.toISOString());
-    }
+    // Note: Individual getter methods have been removed as they are now handled
+    // automatically by the generic command processing system in processMessage()
 
     // ===== SETTER METHODS (from Arduino) =====
 
@@ -823,6 +711,41 @@ export class WinchController {
         }
 
         if (commandConfig) {
+            // Find the category of this command
+            const commandCategory = this.getCommandCategory(commandConfig);
+            
+            // Handle getter commands - return current state value
+            if (commandCategory === 'getter') {
+                const stateValue = commandConfig.state ? this.getStateValue(commandConfig.state) : null;
+                logger.info(`🔍 Getter command: ${command} -> ${stateValue} (${commandConfig.description})`);
+                
+                // Broadcast the response back to client
+                if (stateValue !== null && commandConfig.format) {
+                    this.broadcastStateMessage(commandConfig.action, stateValue);
+                    logger.debug(`📡 Broadcasted getter response: ${commandConfig.action} = ${stateValue}`);
+                } else {
+                    logger.warn(`Cannot broadcast getter response: stateValue=${stateValue}, format=${commandConfig.format}`);
+                }
+                return;
+            }
+            
+            // Handle setter commands - update state with value from message
+            if (commandCategory === 'setter') {
+                const value = this.extractValueFromMessage(message);
+                if (commandConfig.state) {
+                    this.setStateValue(commandConfig.state, value);
+                    logger.info(`🔧 Setter command: ${command} = ${value} (${commandConfig.description})`);
+                    
+                    // Broadcast the state change to all clients
+                    this.broadcastStateMessage(commandConfig.action, value);
+                    logger.debug(`📡 Broadcasted setter response: ${commandConfig.action} = ${value}`);
+                } else {
+                    logger.warn(`Setter command ${command} has no state property defined`);
+                }
+                return;
+            }
+            
+            // Handle control commands - execute method
             const methodName = this.getMethodNameFromCommand(commandConfig);
             if (methodName && typeof (this as any)[methodName] === 'function') {
                 logger.info(`🔧 Executing method: ${methodName} for command: ${command} (${commandConfig.description})`);
@@ -844,6 +767,37 @@ export class WinchController {
     private getMethodNameFromCommand(commandConfig: any): string {
         // Command actions already match method names, just return the action
         return commandConfig.function;
+    }
+
+    private getCommandCategory(commandConfig: any): 'control' | 'getter' | 'setter' | null {
+        // Find which command group this command belongs to
+        for (const group of commandsConfig.commandGroups) {
+            if (group.commands.some(cmd => cmd.action === commandConfig.action)) {
+                return group.category;
+            }
+        }
+        return null;
+    }
+
+    private extractValueFromMessage(message: string): number {
+        // Extract numeric value from message (e.g., "sSS1" -> 1, "vWP50" -> 50)
+        const match = message.match(/\d+(\.\d+)?/);
+        return match ? parseFloat(match[0]) : 0;
+    }
+
+    private getStateValue(stateProperty: string): any {
+        // Get value from winch state by property name
+        return (this.state as any)[stateProperty];
+    }
+
+    private setStateValue(stateProperty: string, value: any): void {
+        // Set value in winch state by property name
+        if (stateProperty && stateProperty in this.state) {
+            (this.state as any)[stateProperty] = value;
+            logger.debug(`State updated: ${stateProperty} = ${value}`);
+        } else {
+            logger.warn(`Unknown state property: ${stateProperty}`);
+        }
     }
 
     // ===== UTILITY METHODS =====
@@ -873,7 +827,7 @@ export class WinchController {
         this.wsStepState();
         this.wsPayOutState();
         this.wsSafeStopState();
-        this.getCN();
+        this.broadcastStateMessage('getCN', this.state.winchControl);
 
         this.unLatchPS();
     }

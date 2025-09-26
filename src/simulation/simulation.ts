@@ -69,7 +69,7 @@ export class SimulationManager {
             enableSafetySimulation: true,
             motorTemperatureInterval: 5000,    // 5 seconds default
             batteryVoltageInterval: 2000,     // 2 seconds default
-            rpmInterval: 5000,               // 5 seconds default (slower for better UX)
+            rpmInterval: 500,               // 5 seconds default (slower for better UX)
             ...config
         };
     }
@@ -176,7 +176,7 @@ export class SimulationManager {
         this.simulatedValues.motorTemperature = Math.floor(25 + 10 * Math.sin(this.config.frequency * 0.1 * this.currentTime));
 
         // Update temperature via WinchStateManager
-        this.winchController.setState('motorTemperature', this.simulatedValues.motorTemperature);
+        this.winchController.setStateValue('motorTemperature', this.simulatedValues.motorTemperature);
     }
 
     /**
@@ -190,8 +190,8 @@ export class SimulationManager {
         this.simulatedValues.mainBatteryVoltage = this.simulatedValues.VBAT;
 
         // Update battery values via WinchStateManager
-        this.winchController.setState('VBAT', this.simulatedValues.VBAT);
-        this.winchController.setState('mainBatteryVoltage', this.simulatedValues.mainBatteryVoltage);
+        this.winchController.setStateValue('VBAT', this.simulatedValues.VBAT);
+        this.winchController.setStateValue('mainBatteryVoltage', this.simulatedValues.mainBatteryVoltage);
     }
 
     /**
@@ -208,13 +208,17 @@ export class SimulationManager {
 
         // Simulate RPM and power based on winch mode
         if (mode === Mode.TOW) {
-            // Tow operation: oscillate between -500 and +500 RPM
-            this.simulatedValues.hallRPM = Math.floor(500 * Math.sin(frequency * time));
+            // Tow operation: oscillate between 200 and 500 RPM with 10-second period
+            // sin wave: amplitude = 150, offset = 350, period = 10 seconds
+            const towRPM = 350 + 150 * Math.sin(2 * Math.PI * time / 30);
+            this.simulatedValues.hallRPM = Math.floor(towRPM);
             // Tow operation: simulate power from 0 to 100
             this.simulatedValues.WPowerPotVal = Math.floor(50 + 30 * Math.sin(frequency * 0.5 * time));
         } else if (mode === Mode.REGEN) {
-            // Regen operation: oscillate between -500 and +500 RPM
-            this.simulatedValues.hallRPM = Math.floor(500 * Math.sin(frequency * time));
+            // Regen operation: oscillate between -200 and -500 RPM with 10-second period (negative amplitude)
+            // sin wave: amplitude = -150, offset = -350, period = 10 seconds
+            const regenRPM = -350 - 150 * Math.sin(2 * Math.PI * time / 10);
+            this.simulatedValues.hallRPM = Math.floor(regenRPM);
             // Regen operation: simulate power from 0 to 100
             this.simulatedValues.WPowerPotVal = Math.floor(60 + 40 * Math.sin(frequency * 0.3 * time));
         } else {
@@ -224,8 +228,8 @@ export class SimulationManager {
         }
 
         // Update RPM and power via WinchStateManager
-        this.winchController.setState('hallRPM', this.simulatedValues.hallRPM);
-        this.winchController.setState('WPowerPotVal', this.simulatedValues.WPowerPotVal);
+        this.winchController.setStateValue('hallRPM', this.simulatedValues.hallRPM);
+        this.winchController.setStateValue('WPowerPotVal', this.simulatedValues.WPowerPotVal);
     }
 
     /**

@@ -195,13 +195,13 @@ export const commandsConfig: CommandsConfig = {
           action: "setWPowerPotVal",
           description: "Set Winch Power Value",
           state: "WPowerPotVal",
-          format: "wsPowerPot{value}"
+          format: "WPwVal{value}"
         },
         {
           action: "setWRegenPotVal",
           description: "Set Winch Regen Value",
           state: "WRegenPotVal",
-          format: "wsRegen{value}"
+          format: "WRgVal{value}"
         },
         {
           action: "setWTensRPS1",

@@ -717,7 +717,7 @@ export class WinchController {
             // Handle getter commands - return current state value
             if (commandCategory === 'getter') {
                 const stateValue = commandConfig.state ? this.getStateValue(commandConfig.state) : null;
-                logger.info(`🔍 Getter command: ${command} -> ${stateValue} (${commandConfig.description})`);
+                logger.debug(`🔍 Getter command: ${command} -> ${stateValue} (${commandConfig.description})`);
                 
                 // Broadcast the response back to client
                 if (stateValue !== null && commandConfig.format) {
@@ -790,11 +790,11 @@ export class WinchController {
         return (this.state as any)[stateProperty];
     }
 
-    private setStateValue(stateProperty: string, value: any): void {
-        // Set value in winch state by property name
+    public setStateValue(stateProperty: string, value: any): void {
+        // Set value in winch state by property name without triggering callbacks
         if (stateProperty && stateProperty in this.state) {
             (this.state as any)[stateProperty] = value;
-            logger.debug(`State updated: ${stateProperty} = ${value}`);
+            logger.debug(`State updated silently: ${stateProperty} = ${value}`);
         } else {
             logger.warn(`Unknown state property: ${stateProperty}`);
         }

@@ -1,19 +1,15 @@
 import bonjour from 'bonjour';
 import { createLogger, format, transports } from 'winston';
+import { createColoredLoggerFormat } from '@/utils/loggerFormat';
 
 const logger = createLogger({
     level: 'info',
     format: format.combine(
         format.errors({ stack: true }),
-        format.json()
+        createColoredLoggerFormat('ZeroConfService')
     ),
     transports: [
-        new transports.Console({
-            format: format.combine(
-                format.colorize(),
-                format.simple()
-            )
-        })
+        new transports.Console()
     ]
 });
 

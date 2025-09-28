@@ -3,20 +3,15 @@ import * as os from 'os';
 import { Mode } from '@/types/winchEnums';
 import { ZeroConfService } from '@/services/zeroConfService';
 import { createLogger, format, transports } from 'winston';
+import { createColoredLoggerFormat } from '@/utils/loggerFormat';
 
 const logger = createLogger({
-    level: 'info',
+    level: 'debug',
     format: format.combine(
-        format.errors({ stack: true }),
-        format.json()
+        createColoredLoggerFormat('WebSocketController')
     ),
     transports: [
-        new transports.Console({
-            format: format.combine(
-                format.colorize(),
-                format.simple()
-            )
-        })
+        new transports.Console()
     ]
 });
 import { WinchController } from '@/controllers/winchController';
@@ -100,14 +95,14 @@ export class WebSocketController {
 
     private setupStateListeners(): void {
         // Set state change callback to handle WebSocket broadcasting
-        this.winchController.setStateChangeCallback((property: string, value: number | string | Date, format: string) => {
+        this.winchController.setStateChangeCallback((property: string, value: number | string | Date) => {
             // Find commands that use this state property
             const commands = getCommandsByState(property);
 
             if (commands.length > 0) {
                 // Use the first command's format (there should typically be only one)
                 const command = commands[0];
-                if (command.format) {
+                if (command.response) {
                     let formattedValue = String(value);
 
                     // Apply formatting options if available
@@ -115,7 +110,7 @@ export class WebSocketController {
                         formattedValue = Number(value).toFixed(command.formatOptions.decimalPlaces);
                     }
 
-                    const message = command.format.replace('{value}', formattedValue);
+                    const message = command.response.replace('{value}', formattedValue);
                     logger.debug(`🔧 State change: ${property}=${value} → ${message} (command: ${command.action})`);
                     this.broadcastMessage(message);
                 } else {
@@ -183,6 +178,7 @@ export class WebSocketController {
 
             ws.on('message', (message) => {
                 const msg = message.toString();
+                logger.debug(`🔄 handleMessage(): Received message: ${msg}`);
 
                 // Handle pong response
                 if (msg === 'pong') {

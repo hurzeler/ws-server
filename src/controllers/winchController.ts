@@ -1,18 +1,14 @@
 import { createLogger, format, transports } from 'winston';
+import { createColoredLoggerFormat } from '@/utils/loggerFormat';
 
 const logger = createLogger({
     level: 'info',
     format: format.combine(
         format.errors({ stack: true }),
-        format.json()
+        createColoredLoggerFormat('WinchController')
     ),
     transports: [
-        new transports.Console({
-            format: format.combine(
-                format.colorize(),
-                format.simple()
-            )
-        })
+        new transports.Console()
     ]
 });
 import { WinchState, createInitialWinchState } from '@/model/winchState';
@@ -226,7 +222,7 @@ export class WinchController {
 
     private broadcastStateMessage(commandAction: string, value: any): void {
         const commandConfig = getCommandByAction(commandAction);
-        if (commandConfig && commandConfig.format) {
+        if (commandConfig && commandConfig.response) {
             let formattedValue = value;
 
             // Apply formatting options if available
@@ -234,7 +230,7 @@ export class WinchController {
                 formattedValue = Number(value).toFixed(commandConfig.formatOptions.decimalPlaces);
             }
 
-            const message = commandConfig.format.replace('{value}', formattedValue);
+            const message = commandConfig.response.replace('{value}', formattedValue);
             this.broadcastMessage(message);
         } else {
             // Fallback to simple format if no configuration found
@@ -706,7 +702,7 @@ export class WinchController {
         if (!commandConfig) {
             const allCommands = commandsConfig.commandGroups.flatMap(group => group.commands);
             commandConfig = allCommands.find(cmd =>
-                cmd.format && command.startsWith(cmd.format.replace('{value}', '').replace(/[{}]/g, ''))
+                cmd.request && command.startsWith(cmd.request.replace('{value}', '').replace(/[{}]/g, ''))
             );
         }
 
@@ -720,11 +716,11 @@ export class WinchController {
                 logger.debug(`🔍 Getter command: ${command} -> ${stateValue} (${commandConfig.description})`);
                 
                 // Broadcast the response back to client
-                if (stateValue !== null && commandConfig.format) {
+                if (stateValue !== null && commandConfig.response) {
                     this.broadcastStateMessage(commandConfig.action, stateValue);
                     logger.debug(`📡 Broadcasted getter response: ${commandConfig.action} = ${stateValue}`);
                 } else {
-                    logger.warn(`Cannot broadcast getter response: stateValue=${stateValue}, format=${commandConfig.format}`);
+                    logger.warn(`Cannot broadcast getter response: stateValue=${stateValue}, response=${commandConfig.response}`);
                 }
                 return;
             }
@@ -733,12 +729,12 @@ export class WinchController {
             if (commandCategory === 'setter') {
                 const value = this.extractValueFromMessage(message);
                 if (commandConfig.state) {
-                    this.setStateValue(commandConfig.state, value);
+                    this.setStateValue(commandConfig.state, value)
                     logger.info(`🔧 Setter command: ${command} = ${value} (${commandConfig.description})`);
                     
                     // Broadcast the state change to all clients
                     this.broadcastStateMessage(commandConfig.action, value);
-                    logger.debug(`📡 Broadcasted setter response: ${commandConfig.action} = ${value}`);
+                    logger.debug(`📡 Broadcasted setter response for ${commandConfig.action}: ${commandConfig.response} = ${value}`);
                 } else {
                     logger.warn(`Setter command ${command} has no state property defined`);
                 }
@@ -755,6 +751,7 @@ export class WinchController {
             }
         } else {
             // Try to find method by exact name match for backward compatibility
+            logger.debug(`🔍 Trying to find method by name: ${command}`);
             if (typeof (this as any)[command] === 'function') {
                 logger.info(`🔧 Executing method by name: ${command}`);
                 (this as any)[command]();
@@ -765,8 +762,8 @@ export class WinchController {
     }
 
     private getMethodNameFromCommand(commandConfig: any): string {
-        // Command actions already match method names, just return the action
-        return commandConfig.function;
+        // Check if there's a specific function name, otherwise use the action
+        return commandConfig.function || commandConfig.action;
     }
 
     private getCommandCategory(commandConfig: any): 'control' | 'getter' | 'setter' | null {

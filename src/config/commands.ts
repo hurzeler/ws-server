@@ -1,275 +1,297 @@
 export interface Command {
-    action: string;
-    function?: string;
-    description: string;
-    format?: string;
-    state?: string;
-    formatOptions?: {
-        decimalPlaces?: number;
-    };
+  action: string;
+  description: string;
+  request?: string;
+  response?: string;
+  state?: string;
+  formatOptions?: {
+    decimalPlaces?: number;
+  };
 }
 
 export interface CommandGroup {
-    category: 'control' | 'getter' | 'setter';
-    commands: Command[];
+  category: 'control' | 'getter' | 'setter';
+  commands: Command[];
 }
 
 export interface CommandsConfig {
-    commandGroups: CommandGroup[];
+  commandGroups: CommandGroup[];
 }
 
 export const commandsConfig: CommandsConfig = {
-    commandGroups: [
+  commandGroups: [
+    {
+      category: "control",
+      commands: [
         {
-            category: "control",
-            commands: [
-                {
-                    action: "EmStopST",
-                    function: "btnSafeStopST",
-                    description: "Emergency Stop"
-                },
-                {
-                    action: "PayinST",
-                    function: "btnPayinST",
-                    description: "Payin Start"
-                },
-                {
-                    action: "StepST",
-                    function: "stepST",
-                    description: "Step"
-                },
-                {
-                    action: "PayoutST",
-                    function: "btnPayoutST",
-                    description: "Payout Start"
-                },
-                {
-                    action: "WinchCN",
-                    function: "btnWinchCN",
-                    description: "Winch Control"
-                },
-                {
-                    action: "PilotCN",
-                    function: "btnPilotCN",
-                    description: "Pilot Control"
-                }
-            ]
+          action: "btnSafeStopST",
+          description: "Emergency Stop",
+          request: "EmStopST"
         },
         {
-            category: "getter",
-            commands: [
-                {
-                    action: "getEmSST",
-                    description: "Get Emergency Stop Status",
-                    format: "sSS{value}",
-                    state: "safeStopState"
-                },
-                {
-                    action: "getPayinST",
-                    description: "Get Payin Status",
-                    format: "sRW{value}",
-                    state: "payinState"
-                },
-                {
-                    action: "getStepST",
-                    description: "Get Step Status",
-                    format: "sPR{value}",
-                    state: "stepState"
-                },
-                {
-                    action: "getPayoutST",
-                    description: "Get Payout Status",
-                    format: "sPO{value}",
-                    state: "payoutState"
-                },
-                {
-                    action: "getCN",
-                    description: "Get Control Status",
-                    format: "sCN{value}",
-                    state: "winchControl"
-                },
-                {
-                    action: "getWPwVal",
-                    description: "Get Winch Power Value",
-                    format: "vWP{value}",
-                    state: "WPowerPotVal"
-                },
-                {
-                    action: "getWRgVal",
-                    description: "Get Winch Regen Value",
-                    format: "vWR{value}",
-                    state: "WRegenPotVal"
-                },
-                {
-                    action: "getWPCVal",
-                    description: "Get Pulse Count Value",
-                    format: "HAL{value}",
-                    state: "pulseCount"
-                },
-                {
-                    action: "getWPCSVal",
-                    description: "Get Pulse Count Stop Limit Value",
-                    format: "PCS{value}",
-                    state: "pulseCountLimit"
-                },
-                {
-                    action: "getWPCSSta",
-                    description: "Get Pulse Count Stop Status",
-                    format: "vPS{value}",
-                    state: "pulseCountStopStatus"
-                },
-                {
-                    action: "getRSSIVal",
-                    description: "Get RSSI Value",
-                    format: "vRS{value}",
-                    state: "RSSIVal"
-                },
-                {
-                    action: "getSSVal",
-                    description: "Get Safe State Value",
-                    format: "vSS{value}",
-                    state: "safeStateActive"
-                },
-                {
-                    action: "getLSVal",
-                    description: "Get Line Stop Value",
-                    format: "vBL{value}",
-                    state: "LSMSGcnt"
-                },
-                {
-                    action: "getVBATVal",
-                    description: "Get Battery Voltage Value",
-                    format: "vMB{value}",
-                    state: "VBAT",
-                    formatOptions: {
-                        decimalPlaces: 1
-                    }
-                },
-                {
-                    action: "getSSIDVal",
-                    description: "Get SSID Value",
-                    format: "vID{value}",
-                    state: "ssid"
-                },
-                {
-                    action: "getRPMVal",
-                    description: "Get Hall RPM Value",
-                    format: "vRP{value}",
-                    state: "hallRPM"
-                },
-                {
-                    action: "getTNDir",
-                    description: "Get Tension Direction Value",
-                    format: "vTN{value}",
-                    state: "direct"
-                },
-                {
-                    action: "getAC",
-                    description: "Get Counter Value",
-                    format: "vAC{value}",
-                    state: "counter"
-                },
-                {
-                    action: "getMT",
-                    description: "Get Motor Temperature Value",
-                    format: "vMT{value}",
-                    state: "motorTemperature"
-                },
-                {
-                    action: "getMB",
-                    description: "Get Main Battery Voltage Value",
-                    format: "vMB2{value}",
-                    state: "mainBatteryVoltage",
-                    formatOptions: {
-                        decimalPlaces: 1
-                    }
-                },
-                {
-                    action: "getTime",
-                    description: "Get Server Time",
-                    format: "serverTime{value}",
-                    state: "serverTime"
-                },
-                {
-                    action: "getMode",
-                    description: "Get Winch Mode",
-                    format: "mode{value}",
-                    state: "mode"
-                }
-            ]
+          action: "btnPayinST",
+          description: "Payin Start",
+          request: "PayinST"
         },
         {
-            category: "setter",
-            commands: [
-                {
-                    action: "setWPowerPotVal",
-                    description: "Set Winch Power Value",
-                    state: "WPowerPotVal",
-                    format: "wsPowerPot{value}"
-                },
-                {
-                    action: "setWRegenPotVal",
-                    description: "Set Winch Regen Value",
-                    state: "WRegenPotVal",
-                    format: "wsRegen{value}"
-                },
-                {
-                    action: "setWTensRPS1",
-                    description: "Set Tension RPS 1 Value - up",
-                    state: "WTensRPS1",
-                    format: "WTRTUv{value}"
-                },
-                {
-                    action: "setWTensRPS2",
-                    description: "Set Tension RPS 2 Value - down",
-                    state: "WTensRPS2",
-                    format: "WTRLAv{value}"
-                },
-                {
-                    action: "setWTensRPS3",
-                    description: "Set Tension RPS 3 Value - preset",
-                    state: "WTensRPS3",
-                    format: "WTRPLv{value}"
-                },
-                {
-                    action: "setPulseCountLimit",
-                    description: "Set Pulse Count Stop Limit",
-                    state: "pulseCountLimit",
-                    format: "WPCSVal{value}"
-                },
-                {
-                    action: "setPulseCountStopStatus",
-                    description: "Set Pulse Count Stop Status",
-                    state: "pulseCountStopStatus",
-                    format: "WPCSSta{value}"
-                },
-                {
-                    action: "setRSSIVal",
-                    description: "Set RSSI Value",
-                    state: "RSSIVal",
-                    format: "sRS{value}"
-                },
-                {
-                    action: "setMotorTemperature",
-                    description: "Set Motor Temperature",
-                    state: "motorTemperature",
-                    format: "sMT{value}"
-                },
-                {
-                    action: "setMainBatteryVoltage",
-                    description: "Set Main Battery Voltage",
-                    state: "mainBatteryVoltage",
-                    format: "sMB{value}"
-                },
-                {
-                    action: "setHallRPM",
-                    description: "Set Hall RPM Value",
-                    state: "hallRPM",
-                    format: "sRP{value}"
-                }
-            ]
+          action: "stepST",
+          description: "Step",
+          request: "StepST"
+        },
+        {
+          action: "btnPayoutST",
+          description: "Payout Start",
+          request: "PayoutST"
+        },
+        {
+          action: "btnWinchCN",
+          description: "Winch Control",
+          request: "WinchCN"
+        },
+        {
+          action: "btnPilotCN",
+          description: "Pilot Control",
+          request: "PilotCN"
         }
-    ]
+      ]
+    },
+    {
+      category: "getter",
+      commands: [
+        {
+          action: "getEmSST",
+          description: "Get Emergency Stop Status", 
+          response: "sSS{value}",
+          state: "safeStopState"
+        },
+        {
+          action: "getPayinST",
+          description: "Get Payin Status",
+          response: "sRW{value}",
+          state: "payinState"
+        },
+        {
+          action: "getStepST",
+          description: "Get Step Status",
+          response: "sPR{value}",
+          state: "stepState"
+        },
+        {
+          action: "getPayoutST",
+          description: "Get Payout Status",
+          response: "sPO{value}",
+          state: "payoutState"
+        },
+        {
+          action: "getCN",
+          description: "Get Control Status",
+          response: "sCN{value}",
+          state: "winchControl"
+        },
+        {
+          action: "getWPwVal",
+          description: "Get Winch Power Value",
+          response: "vWP{value}",
+          state: "WPowerPotVal"
+        },
+        {
+          action: "getWRgVal",
+          description: "Get Winch Regen Value",
+          response: "vWR{value}",
+          state: "WRegenPotVal"
+        },
+        {
+          action: "getPCVal",
+          description: "Get Pulse Count Value",
+          response: "vPC{value}",
+          state: "pulseCount"
+        },
+        {
+          action: "getWPCSVal",
+          description: "Get Pulse Count Stop Limit Value",
+          response: "vPCS{value}",
+          state: "pulseCountLimit"
+        },
+        {
+          action: "getWPCSSta",
+          description: "Get Pulse Count Stop Status",
+          response: "vPS{value}",
+          state: "pulseCountStopStatus"
+        },
+        {
+          action: "getRSSIVal",
+          description: "Get RSSI Value",
+          response: "vRS{value}",
+          state: "RSSIVal"
+        },
+        {
+          action: "getSSVal",
+          description: "Get Safe State Value",
+          response: "vSS{value}",
+          state: "safeStateActive"
+        },
+        {
+          action: "getLSVal",
+          description: "Get Line Stop Value",
+            response: "vBL{value}",
+          state: "LSMSGcnt"
+        },
+        {
+          action: "getVBATVal",
+          description: "Get Battery Voltage Value",
+          response: "vMB{value}",
+          state: "VBAT",
+          formatOptions: {
+            decimalPlaces: 1
+          }
+        },
+        {
+          action: "getSSIDVal",
+          description: "Get SSID Value",
+          response: "vID{value}",
+          state: "ssid"
+        },
+        {
+          action: "getRPMVal",
+          description: "Get Hall RPM Value",
+          response: "vRP{value}",
+          state: "hallRPM"
+        },
+        {
+          action: "getTNDir",
+          description: "Get Tension Direction Value",
+          response: "vTN{value}",
+          state: "direct"
+        },
+        {
+          action: "getAC",
+          description: "Get Counter Value",
+          response: "vAC{value}",
+          state: "counter"
+        },
+        {
+          action: "getMT",
+          description: "Get Motor Temperature Value",
+          response: "vMT{value}",
+          state: "motorTemperature"
+        },
+        {
+          action: "getMB",
+          description: "Get Main Battery Voltage Value",
+          response: "vMB{value}",
+          state: "mainBatteryVoltage"
+        },
+        {
+          action: "getTime",
+          description: "Get Server Time",
+          response: "serverTime{value}",
+          state: "serverTime"
+        },
+        {
+          action: "getMode",
+          description: "Get Winch Mode",
+          response: "mode{value}",
+          state: "mode"
+        }
+      ]
+    },
+    {
+      category: "setter",
+      commands: [
+        {
+          action: "setWPowerPotVal",
+          description: "Set Winch Power Value",
+          state: "WPowerPotVal",
+          request: "WPwVal{value}",
+          response: "vWP{value}"
+        },
+        {
+          action: "wsPowerPot",
+          description: "Arduino Winch Power Pot Message",
+          state: "WPowerPotVal",
+          request: "wsPowerPot{value}",
+          response: "vWP{value}"
+        },
+        {
+          action: "setWRegenPotVal",
+          description: "Set Winch Regen Value",
+          state: "WRegenPotVal",
+          request: "WRgVal{value}",
+          response: "vWR{value}"
+        },
+        {
+          action: "wsRegen",
+          description: "Arduino Winch Regen Message",
+          state: "WRegenPotVal",
+          request: "wsRegen{value}",
+          response: "vWR{value}"
+        },
+        {
+          action: "setWTensRPS1",
+          description: "Set Tension RPS 1 Value",
+          state: "WTensRPS1",
+          request: "WTRTUv{value}",
+          response: "vTRTU{value}"
+        },
+        {
+          action: "setWTensRPS2",
+          description: "Set Tension RPS 2 Value",
+          state: "WTensRPS2",
+          request: "WTRLAv{value}",
+          response: "vTRLA{value}"
+        },
+        {
+          action: "setWTensRPS3",
+          description: "Set Tension RPS 3 Value",
+          state: "WTensRPS3",
+          request: "WTRPLv{value}",
+          response: "vTRPL{value}"
+        },
+        {
+          action: "setPulseCountLimit",
+          description: "Set Pulse Count Stop Limit",
+          state: "pulseCountLimit",
+          request: "WPCSVal{value}",
+          response: "vPCS{value}"
+        },
+        {
+          action: "setPulseCountStopStatus",
+          description: "Set Pulse Count Stop Status",
+          state: "pulseCountStopStatus",
+          request: "WPCSSta{value}",
+          response: "vPS{value}"
+        },
+        {
+          action: "setRSSIVal",
+          description: "Set RSSI Value",
+          state: "RSSIVal",
+          request: "sRS{value}",
+          response: "vRS{value}"
+        },
+        {
+          action: "setMotorTemperature",
+          description: "Set Motor Temperature",
+          state: "motorTemperature",
+          request: "sMT{value}",
+          response: "vMT{value}"
+        },
+        {
+          action: "setMainBatteryVoltage",
+          description: "Set Main Battery Voltage",
+          state: "mainBatteryVoltage",
+          request: "sMB{value}",
+          response: "vMB{value}"
+        },
+        {
+          action: "setHallRPM",
+          description: "Set Hall RPM Value",
+          state: "hallRPM",
+          request: "sRP{value}",
+          response: "vRP{value}"
+        }
+      ]
+    }
+  ]
 };
 
 // Export individual command groups for easier access
@@ -282,62 +304,24 @@ export const allCommands = commandsConfig.commandGroups.flatMap(group => group.c
 
 // Export command lookup functions
 export const getCommandByAction = (action: string): Command | undefined => {
-    return allCommands.find(cmd => cmd.action === action);
+  return allCommands.find(cmd => cmd.action === action);
 };
 
 export const getCommandsByCategory = (category: 'control' | 'getter' | 'setter'): Command[] => {
-    return commandsConfig.commandGroups.find(group => group.category === category)?.commands || [];
+  return commandsConfig.commandGroups.find(group => group.category === category)?.commands || [];
 };
 
 export const getCommandsByState = (state: string): Command[] => {
-    return allCommands.filter(cmd => cmd.state === state);
-};
-
-// Get function name by action (for control commands that have function mapping)
-export const getFunctionByAction = (action: string): string | undefined => {
-    const command = getCommandByAction(action);
-    return command?.function || command?.action;
-};
-
-// Execute function by action name (handles both direct actions and function mappings)
-export const executeAction = (controller: any, action: string): boolean => {
-    const functionName = getFunctionByAction(action);
-    if (functionName && typeof controller[functionName] === 'function') {
-        controller[functionName]();
-        return true;
-    }
-    return false;
-};
-
-// Execute both action and function if they exist and are different
-export const executeBothActions = (controller: any, action: string): boolean => {
-    const command = getCommandByAction(action);
-    if (!command) return false;
-    
-    let success = false;
-    
-    // Execute the action directly if it exists as a function
-    if (typeof controller[action] === 'function') {
-        controller[action]();
-        success = true;
-    }
-    
-    // Execute the mapped function if it exists and is different from action
-    if (command.function && command.function !== action && typeof controller[command.function] === 'function') {
-        controller[command.function]();
-        success = true;
-    }
-    
-    return success;
+  return allCommands.filter(cmd => cmd.state === state);
 };
 
 // Generate regex pattern for message handlers from getter commands
 export const getMessageHandlerPattern = (): string => {
-    const getterFormats = getterCommands
-        .filter(cmd => cmd.format)
-        .map(cmd => cmd.format!.replace('{value}', '.*'))
-        .map(format => `^${format}`)
-        .join('|');
-    
-    return getterFormats;
+  const getterFormats = getterCommands
+    .filter(cmd => cmd.response)
+    .map(cmd => cmd.response!.replace('{value}', '.*'))
+    .map(format => `^${format}`)
+    .join('|');
+  
+  return getterFormats;
 };

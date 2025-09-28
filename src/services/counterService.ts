@@ -1,21 +1,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { createLogger, format, transports } from 'winston';
+import { createColoredLoggerFormat } from '@/utils/loggerFormat';
 
 const logger = createLogger({
     level: 'info',
     format: format.combine(
         format.timestamp(),
         format.errors({ stack: true }),
-        format.json()
+        createColoredLoggerFormat('CounterService')
     ),
     transports: [
-        new transports.Console({
-            format: format.combine(
-                format.colorize(),
-                format.simple()
-            )
-        })
+        new transports.Console()
     ]
 });
 

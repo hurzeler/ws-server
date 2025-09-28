@@ -1,4 +1,4 @@
-import { commandsConfig, Command } from '@/config/commands';
+import { commandsConfig, Command } from '../config/commands';
 
 /**
  * Extracts all unique state properties from the commands configuration

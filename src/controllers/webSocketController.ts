@@ -111,16 +111,16 @@ export class WebSocketController {
                     }
 
                     const message = command.response.replace('{value}', formattedValue);
-                    logger.debug(`🔧 State change: ${property}=${value} → ${message} (command: ${command.action})`);
+                    //logger.debug(`🔧 State change: ${property}=${value} → ${message} (command: ${command.action})`);
                     this.broadcastMessage(message);
                 } else {
                     // Fallback to raw format if no format defined
-                    logger.debug(`🔧 State change: ${property}=${value} → ${property}${value} (no format)`);
+                    //logger.debug(`🔧 State change: ${property}=${value} → ${property}${value} (no format)`);
                     this.broadcastMessage(`${property}${value}`);
                 }
             } else {
                 // Fallback to raw format if no command mapping found
-                logger.debug(`🔧 State change: ${property}=${value} → ${property}${value} (no command)`);
+                //logger.debug(`🔧 State change: ${property}=${value} → ${property}${value} (no command)`);
                 this.broadcastMessage(`${property}${value}`);
             }
         });
@@ -249,7 +249,7 @@ export class WebSocketController {
 
             this.wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
-                    logger.debug(`🔊 Broadcasting message to client: ${message}`);
+                    //logger.debug(`🔊 Broadcasting message to client: ${message}`);
                     client.send(message);
                 } else {
                     logger.warn(`Client not ready, state: ${client.readyState}`);

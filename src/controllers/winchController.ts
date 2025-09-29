@@ -11,7 +11,7 @@ const logger = createLogger({
         new transports.Console()
     ]
 });
-import { WinchState, createInitialWinchState } from '@/model/winchState';
+import { WinchState } from '@/model/winchState';
 import { ToggleState, SafeStopState, Mode } from '@/types/winchEnums';
 import { SimulationManager } from '@/simulation/simulation';
 import { commandsConfig, getCommandByAction, getCommandsByCategory } from '@/config/commands';
@@ -56,7 +56,7 @@ export class WinchController {
 
     constructor() {
         // Initialize state with all default values
-        this.state = createInitialWinchState();
+        this.state = new WinchState();
 
         // Initialize simulation
         this.simulation = new SimulationManager(this);
@@ -64,8 +64,6 @@ export class WinchController {
         // Set up simulation to get winch state
         this.simulation.setWinchStateGetter(() => this.getState());
 
-        // Start simulation
-        this.simulation.start();
     }
 
     // ===== CONTROL METHODS (from Arduino) =====
@@ -95,6 +93,10 @@ export class WinchController {
 
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.state.mode = Mode.SAFE;
+        
+        // Stop the simulation
+        this.stopSimulation();
+        
     }
 
     public btnPayinST(): void {
@@ -123,6 +125,9 @@ export class WinchController {
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.unLatchPS();
         this.state.mode = Mode.TOW;
+
+        // Start the simulation
+        this.startSimulation();
     }
 
     public stepST(): void {
@@ -179,6 +184,9 @@ export class WinchController {
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.unLatchPS();
         this.state.mode = Mode.REGEN;
+
+        // Start the simulation
+        this.startSimulation();
     }
 
     public btnPilotCN(): void {
@@ -196,7 +204,7 @@ export class WinchController {
     // ===== STATE MANAGEMENT =====
 
     public getState(): WinchState {
-        return { ...this.state };
+        return this.state;
     }
 
     public setStateChangeCallback(callback: (property: StateKey, value: number | string | Date, format: string) => void): void {
@@ -845,6 +853,12 @@ export class WinchController {
 
     public getSimulation(): SimulationManager {
         return this.simulation;
+    }
+
+    public startSimulation(): void {
+        if (this.simulation) {
+            this.simulation.start();
+        }
     }
 
     public stopSimulation(): void {

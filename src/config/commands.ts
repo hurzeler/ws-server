@@ -49,15 +49,20 @@ export const commandsConfig: CommandsConfig = {
           request: "WinchCN"
         },
         {
-          action: "btnPilotCN",
-          description: "Pilot Control",
-          request: "PilotCN"
+          action: "pong",
+          description: "Heartbeat Response",
+          request: "pong"
         }
       ]
     },
     {
       category: "getter",
       commands: [
+        {
+          action: "ping",
+          description: "Heartbeat Request",
+          response: "pong"
+        },
         {
           action: "getEmSST",
           description: "Get Emergency Stop Status", 

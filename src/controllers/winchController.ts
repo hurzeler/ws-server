@@ -93,9 +93,7 @@ export class WinchController {
 
         this.radioInPrev = 0; // tidy up concurrent presses on green remote
         this.state.mode = Mode.SAFE;
-        
-        // Stop the simulation
-        this.stopSimulation();
+
         
     }
 

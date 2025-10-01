@@ -6,7 +6,7 @@ import { createLogger, format, transports } from 'winston';
 import { createColoredLoggerFormat } from '@/utils/loggerFormat';
 
 const logger = createLogger({
-    level: 'debug',
+    level: 'info',
     format: format.combine(
         createColoredLoggerFormat('WebSocketController')
     ),

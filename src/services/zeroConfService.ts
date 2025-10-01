@@ -1,17 +1,7 @@
 import bonjour from 'bonjour';
-import { createLogger, format, transports } from 'winston';
-import { createColoredLoggerFormat } from '@/utils/loggerFormat';
+import { createLogger } from '@/utils/logger';
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.errors({ stack: true }),
-        createColoredLoggerFormat('ZeroConfService')
-    ),
-    transports: [
-        new transports.Console()
-    ]
-});
+const logger = createLogger('ZeroConfService', 'info');
 
 
 export interface ZeroConfConfig {

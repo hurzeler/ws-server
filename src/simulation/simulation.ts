@@ -1,17 +1,7 @@
 
-import { createLogger, format, transports } from 'winston';
-import { createColoredLoggerFormat } from '@/utils/loggerFormat';
+import { createLogger } from '@/utils/logger';
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.errors({ stack: true }),
-        createColoredLoggerFormat('Simulation')
-    ),
-    transports: [
-        new transports.Console()
-    ]
-});
+const logger = createLogger('Simulation', 'info');
 import { WinchController } from '@/controllers/winchController';
 import { Mode } from '@/types/winchEnums';
 

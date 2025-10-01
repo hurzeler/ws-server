@@ -1,17 +1,7 @@
 import 'module-alias/register';
-import { createLogger, format, transports } from 'winston';
-import { createColoredLoggerFormat } from '@/utils/loggerFormat';
+import { createLogger } from '@/utils/logger';
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.errors({ stack: true }),
-        createColoredLoggerFormat('App')
-    ),
-    transports: [
-        new transports.Console()
-    ]
-});
+const logger = createLogger('App', 'info');
 import { WebSocketController } from '@/controllers/webSocketController';
 import { CounterService } from '@/services/counterService';
 import { WinchController } from '@/controllers/winchController';

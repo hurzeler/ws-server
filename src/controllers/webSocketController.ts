@@ -2,18 +2,10 @@ import { WebSocketServer, WebSocket } from 'ws';
 import * as os from 'os';
 import { Mode } from '@/types/winchEnums';
 import { ZeroConfService } from '@/services/zeroConfService';
-import { createLogger, format, transports } from 'winston';
-import { createColoredLoggerFormat } from '@/utils/loggerFormat';
+import { createLogger } from '@/utils/logger';
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        createColoredLoggerFormat('WebSocketController')
-    ),
-    transports: [
-        new transports.Console()
-    ]
-});
+const logger = createLogger('WebSocketController', 'debug');
+
 import { WinchController } from '@/controllers/winchController';
 import { networkConfig } from '@/config/network';
 import { getCommandsByState } from '@/config/commands';

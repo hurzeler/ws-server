@@ -1,19 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { createLogger, format, transports } from 'winston';
-import { createColoredLoggerFormat } from '@/utils/loggerFormat';
+import { createLogger } from '@/utils/logger';
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.timestamp(),
-        format.errors({ stack: true }),
-        createColoredLoggerFormat('CounterService')
-    ),
-    transports: [
-        new transports.Console()
-    ]
-});
+const logger = createLogger('CounterService', 'info');
 
 export class CounterService {
     private static instance: CounterService;
